@@ -1,0 +1,12 @@
+{
+  var boolean, arithmetic : int;
+
+  if (arithmetic == 3)
+    print 3;
+
+  if (boolean == 0) {
+    print 0;
+  } else {
+    print 1;
+  }
+}
