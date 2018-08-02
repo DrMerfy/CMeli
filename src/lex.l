@@ -70,32 +70,57 @@ LETTER [a-zA-Z]
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(LE);
-                            }
+                             }
 ">="                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(GE);
-                            }
+                             }
 "=="                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(EQ);
-                            }
+                             }
 "!="                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(NE);
-                            }
+                             }
 "&&"                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(AND);
-                            }
+                             }
 "||"                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);
                                return(OR);
-                            }
+                             }
+"+="                         {
+                               printf("%s",yytext);
+                               strcpy(yylval.ystr, yytext);
+                               return(PLE);
+                             }
+"-="                         {
+                               printf("%s",yytext);
+                               strcpy(yylval.ystr, yytext);
+                               return(MNE);
+                             }
+"*="                         {
+                               printf("%s",yytext);
+                               strcpy(yylval.ystr, yytext);
+                               return(MLE);
+                             }
+"/="                         {
+                               printf("%s",yytext);
+                               strcpy(yylval.ystr, yytext);
+                               return(SBE);
+                             }
+"%="                         {
+                               printf("%s",yytext);
+                               strcpy(yylval.ystr, yytext);
+                               return(MDE);
+                             }
 "("                         {
                                printf("%s",yytext);
                                strcpy(yylval.ystr, yytext);

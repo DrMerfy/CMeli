@@ -26,7 +26,7 @@
 %token <ystr> ID
 
 %right '!'
-%right '=' '+=' '-=' '*=' '/=' '%='
+%right '=' PLE MNE MLE SBE MDE
 
 %left EQ NE
 %left '>' GE '<' LE
