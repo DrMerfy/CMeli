@@ -4,12 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-
-
-/* ----------------------------------------------------------- */
-/* --------- Declarations for Syntax-Semantic Analysis ------- */
-/* ----------------------------------------------------------- */
-
+#include "semantic.h"
 %}
 
 %union
@@ -40,99 +35,38 @@
 %start program
 
 %%
-program   :   '{' decls stmts '}'
-              {
-                printf("/1\n");
-                $$ = $2;
-              }
+program   :   '{' decls stmts '}'               { printf("/1\n"); $$ = link_two_nodes($1, $2); }
           ;
 
-decls     :   decls decl
-              {
-                printf("/2\n");
-                $$ = $1;
-              }
-          | /* EMPTY */
-              {
-                printf("/3\n");
-              }
+decls     :   decls decl                        { printf("/2\n"); $$ = link_two_nodes($1, $2); }
+          | /* EMPTY */                         { printf("/3\n"); $$ = create_empty_node(); }
           ;
 
-decl      :   VAR ID vars':'type';'
-              {
-                printf("/4\n");
-                $$ = $3;
-              }
+decl      :   VAR ID vars':'type';'             { printf("/4\n"); $$ = link_three_nodes(create_variable($2), $3, $5); }
           ;
 
-vars      :   ','ID vars
-            {
-              printf("/5\n");
-              $$ = $3;
-            }
-          | /*EMPTY*/
-            {
-              printf("/6\n");
-            }
+vars      :   ','ID vars                        { printf("/5\n"); $$ = link_two_nodes(create_variable($2), $3); }
+          | /*EMPTY*/                           { printf("/6\n"); $$ = create_empty_node(); }
           ;
 
-type      :   INT
-              {
-                printf("/7\n");
-                $$ = $1;
-              }
+type      :   INT                               { printf("/7\n"); $$ = create_constant($1); }
           ;
 
-stmts     :   stmts stmt
-              {
-                printf("/8\n");
-                $$ = $1;
-              }
-          |   /*EMPTY*/
-              {
-                printf("/9\n");
-              }
+stmts     :   stmts stmt                        { printf("/8\n"); $$ = $1; }
+          |   /*EMPTY*/                         { printf("/9\n"); }
           ;
 
-stmt      :   simp';'
-              {
-                printf("/10\n");
-                $$ = $1;
-              }
-          |   control
-              {
-                printf("/11\n");
-                $$ = $1;
-              }
-          |   ';'
-              {
-                printf("/12\n");
-                $$ = $1;
-              }
+stmt      :   simp';'                           { printf("/10\n"); $$ = $1; }
+          |   control                           { printf("/11\n"); $$ = $1; }
+          |   ';'                               { printf("/12\n"); $$ = $1; }
           ;
 
-simp      :   ID asop exp
-              {
-                printf("/13\n");
-                $$ = $1;
-              }
-          |   PRINT exp
-              {
-                printf("/14\n");
-                $$ = $1;
-              }
+simp      :   ID asop exp                       { printf("/13\n"); $$ = $1; }
+          |   PRINT exp                         { printf("/14\n"); $$ = $1; }
           ;
 
-control   :   IF'('exp')' block else_blc
-              {
-                printf("/15\n");
-                $$ = $3;
-              }
-          |   WHILE'('exp')' block
-              {
-                printf("/16\n");
-                $$ = $3;
-              }
+control   :   IF'('exp')' block else_blc        { printf("/15\n"); $$ = $3; }
+          |   WHILE'('exp')' block              { printf("/16\n"); $$ = $3; }
           |   FOR'('simp';'exp';'simp')' block
               {
                 printf("/17\n");
@@ -161,33 +95,13 @@ else_blc  :   ELSE  block
               }
           ;
 
-block     :   stmt
-              {
-                printf("/22\n");
-                $$ = $1;
-              }
-          |   '{'stmt'}'
-              {
-                printf("/23\n");
-                $$ = $2;
-              }
+block     :   stmt                              { printf("/22\n"); $$ = $1; }
+          |   '{'stmts'}'                       { printf("/23\n"); $$ = $2; }
           ;
 
-exp       :   '('exp')'
-              {
-                printf("/24\n");
-                $$ = $2;
-              }
-          |   DEC_CONST
-              {
-                printf("/25\n");
-                $$ = $1;
-              }
-          |   ID
-              {
-                printf("/26\n");
-                $$ = $1;
-              }
+exp       :   '('exp')'                         { printf("/24\n"); $$ = $2; }
+          |   DEC_CONST                         { printf("/25\n"); $$ = $1; }
+          |   ID                                { printf("/26\n"); $$ = $1; }
           |   unop exp
               {
                 printf("/27\n");
@@ -201,11 +115,11 @@ exp       :   '('exp')'
           ;
 
 asop      :   '='  { printf("/$/1\n");}
-          |   '+=' { printf("/$/2\n");}
-          |   '-=' { printf("/$/3\n");}
-          |   '*=' { printf("/$/4\n");}
-          |   '/=' { printf("/$/5\n");}
-          |   '%=' { printf("/$/6\n");}
+          |   PLE { printf("/$/2\n");}
+          |   MNE { printf("/$/3\n");}
+          |   MlE { printf("/$/4\n");}
+          |   SBE { printf("/$/5\n");}
+          |   MDE { printf("/$/6\n");}
           ;
 
 binop     :   '+'  { printf("/$/7\n");}

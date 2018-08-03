@@ -1,0 +1,17 @@
+{
+  var i, j, tmp : int;
+
+  i = 0;
+  i = i + 1;
+  while (i < 100) {
+
+    i = i + 1;
+    i = 0;
+  }
+
+  for (j = 0; j <= i - i/2; j+=1) {
+    tmp += 2;
+  }
+
+  print tmp;
+}

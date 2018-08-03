@@ -5,30 +5,25 @@ NC='\033[0m' # No Color
 cd ../build
 
 printf "${BLUE}Blank ${NC}\n"
-./a.out < ../tests/blank
+./compiler < ../tests/blank
 
 printf "${BLUE}Blank Program ${NC}\n"
-./a.out < ../tests/blank_program
+./compiler < ../tests/blank_program
 
 printf "${BLUE}Simple Assigment ${NC}\n"
-./a.out < ../tests/calc_assigment
+./compiler < ../tests/calc_assigment
 
 printf "${BLUE}Calculation Assigment ${NC}\n"
-./a.out < ../tests/simple_assigment
+./compiler < ../tests/simple_assigment
 
 printf "${BLUE}Simple Print ${NC}\n"
-./a.out < ../tests/simple_print
+./compiler < ../tests/simple_print
 
 printf "${BLUE}Simple Control ${NC}\n"
-./a.out < ../tests/simple_control
+./compiler < ../tests/simple_control
 
-# printf "${BLUE}Number tests ${NC}\n"
-# ./a.out < ./tests/number-test
-#
-# printf "\n"
-# printf "${BLUE}Letter tests ${NC}\n"
-# ./a.out < ./tests/letter-test
-#
-# printf "\n"
-# printf "${BLUE}Program test 1 ${NC}\n"
-# ./a.out < ./tests/program1
+printf "${BLUE}Loops ${NC}\n"
+./compiler < ../tests/loops
+
+printf "${BLUE}Program test 1 ${NC}\n"
+./compiler < ../tests/program1
