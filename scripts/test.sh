@@ -11,10 +11,10 @@ printf "${BLUE}Blank Program ${NC}\n"
 ./compiler < ../tests/blank_program
 
 printf "${BLUE}Simple Assigment ${NC}\n"
-./compiler < ../tests/calc_assigment
+./compiler < ../tests/simple_assigment
 
 printf "${BLUE}Calculation Assigment ${NC}\n"
-./compiler < ../tests/simple_assigment
+./compiler < ../tests/calc_assigment
 
 printf "${BLUE}Simple Print ${NC}\n"
 ./compiler < ../tests/simple_print

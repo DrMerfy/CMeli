@@ -4,13 +4,16 @@ build: clean compiler
 
 compiler:
 	mkdir build;
-	cd src; cp semantic.h ../build/ 
+	cd src; cp tree.h ../build/
+	cd src; cp errors.h ../build/
+	cd src; cp main.c ../build/
+	cd src; cp zyywrap.c ../build/
 
 	cd build; yacc -vd ../src/yacc.y
 
 	cd build; flex ../src/lex.l
 
-	cd build; gcc lex.yy.c y.tab.c ../src/zyywrap.c -o compiler
+	cd build; gcc main.c -o compiler
 
 
 .phony: test
@@ -20,5 +23,3 @@ test:
 .phony: clean
 clean:
 	rm -rf build;
-
-

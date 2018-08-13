@@ -2,6 +2,7 @@
   #include <stdio.h>
   #include <string.h>
   #include "y.tab.h"
+  #include "tree.h"
 
   #define N  9 //Number of reserved words
 
@@ -17,142 +18,147 @@ LETTER [a-zA-Z]
 %%
 
 {DIGIT}                     {
-                               printf("DIGIT: %s", yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(DEC_CONST);
                             }
-"-"?[1-9]{DIGIT}*           {
-                               printf("NUMBER: %s",yytext);
+[1-9]{DIGIT}*               {
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(DEC_CONST);
                             }
 "*"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('*');
                             }
 "/"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('/');
                             }
 "%"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('%');
                             }
 "+"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('+');
                             }
 "-"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('-');
                             }
+"!"                         {
+                               /*printf("%s\n",yytext);*/
+                               strcpy(yylval.ystr, yytext);
+                               return('!');
+                            }
 "="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('=');
                             }
 "<"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('<');
                             }
 ">"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('>');
                             }
 "<="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(LE);
                              }
 ">="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(GE);
                              }
 "=="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(EQ);
                              }
 "!="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(NE);
                              }
 "&&"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(AND);
                              }
 "||"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(OR);
                              }
 "+="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(PLE);
                              }
 "-="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(MNE);
                              }
 "*="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(MLE);
                              }
 "/="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(SBE);
                              }
 "%="                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(MDE);
                              }
 "("                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('(');
                             }
 ")"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(')');
                             }
 "{"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('{');
                             }
 "}"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return('}');
                             }
 ","                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(',');
                             }
 ";"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(';');
                             }
 ":"                         {
-                               printf("%s",yytext);
+                               /*printf("%s\n",yytext);*/
                                strcpy(yylval.ystr, yytext);
                                return(':');
                             }
@@ -160,7 +166,7 @@ LETTER [a-zA-Z]
 
 {LETTER}({LETTER}|{DIGIT}|"_")*   {
 
-                                     printf("LETTER: %s",yytext);
+                                     /*printf("%s\n",yytext);*/
                                      int i = isID(yytext);
                                      if(i==ID)
                                         strcpy(yylval.ystr, yytext);
@@ -169,10 +175,11 @@ LETTER [a-zA-Z]
                                      return(i);
                                   }
 
-[ \f\n\r\t]+                // DO NOTHING
-.                           {
-                               printf("%sUnexpected character: %s\n%s",RED, yytext, NC);
-                            }
+[ \f\r\t]+                        // DO NOTHING
+[\n]                              { line_number++; }
+.                                 {
+                                    printf("%sUnexpected character: %s\n%s",RED, yytext, NC);
+                                  }
 
 %%
 
