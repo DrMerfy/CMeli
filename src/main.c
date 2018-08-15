@@ -6,4 +6,5 @@
 
 int main(void) {
    yyparse();
+   print_tree();
 }

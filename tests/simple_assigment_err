@@ -1,0 +1,11 @@
+{
+  var hello, type, hi : int;
+  var hello, there, type: int;
+
+  type = 4;
+
+  if (type) {
+    type+=3;
+  }
+
+}

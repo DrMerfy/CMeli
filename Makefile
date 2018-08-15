@@ -4,8 +4,9 @@ build: clean compiler
 
 compiler:
 	mkdir build;
+	cd src; cp macros.h ../build/
 	cd src; cp tree.h ../build/
-	cd src; cp errors.h ../build/
+	cd src; cp out.h ../build/
 	cd src; cp main.c ../build/
 	cd src; cp zyywrap.c ../build/
 

@@ -27,3 +27,9 @@ printf "${BLUE}Loops ${NC}\n"
 
 printf "${BLUE}Program test 1 ${NC}\n"
 ./compiler < ../tests/program1
+
+
+printf "${BLUE}---->ERRORS<---- ${NC}\n"
+
+printf "${BLUE}SIMPLE ASSIGMENT ERR ${NC}\n"
+./compiler < ../tests/simple_assigment_err

@@ -1,7 +1,8 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include "errors.h"
+#include "macros.h"
+#include "out.h"
 
 /* <------- LANGUAGE SPECIFIC -------> */
 #define MAX_LINKS 4
@@ -14,47 +15,6 @@ typedef int bool;
 enum { false, true };
 
 int line_number = 1; // The current line on the input file
-
-/* <------- SYNTACTICAL ANALYSIS CONSTS -------> */
-#define VProgram 1
-#define VDecls 2
-#define VDecl 3
-#define VVars 4
-#define VType 5
-#define VStmts 6
-#define VStmt 7
-#define VSimp 8
-#define VControl 9
-#define VAsop 10
-#define VExp 11
-#define VBlock 12
-#define VElseBlock 13
-#define VUnop 14
-#define VBinop 15
-
-#define AssigEQ 16
-#define AssigPLE 17
-#define AssigMNE 18
-#define AssigMLE 19
-#define AssigSBE 20
-#define AssigMDE 21
-
-#define BiPLUS 22
-#define BiMINUS 23
-#define BiMULT 24
-#define BiSUB 25
-#define BiDIV 26
-#define BiLS 27
-#define BiLE 28
-#define BiGT 29
-#define BiGE 30
-#define BiEQ 31
-#define BiNE 32
-#define BiAND 33
-#define BiOR 34
-
-#define OpNOT 35
-#define OpNEG 36
 
 /* <------- SYMBOL -------> */
 
@@ -101,6 +61,7 @@ symbol* create_symbol_type(int type) {
   sym->name = NULL;
   sym->value = type;
 
+  sym->type = type;
   sym->isType = true;
   sym->tmp = true;
 
@@ -129,7 +90,8 @@ void pop_symbols() {
   printf("------PRINTING VARIABLES-------\n");
   while (symbol_table_index > 0) {
     symbol_table_index--;
-    printf("%s\n", symbols_table[symbol_table_index]->name);
+    printf("name: %s    ", symbols_table[symbol_table_index]->name);
+    printf("value: %d\n", symbols_table[symbol_table_index]->value);
   }
 }
 
@@ -151,11 +113,12 @@ typedef struct node_struct {
   struct node_struct* children[MAX_LINKS];
 
   int line_number;
+  int type; // Which lexical value the node represents
 } node;
 
-node* root; // The root of the syntax tree
+node* root;
 
-node* add_nodes(int num, node* n1, node* n2, node* n3, node* n4) {
+node* add_nodes(int type, int num, node* n1, node* n2, node* n3, node* n4) {
   node* n = (node*) malloc(sizeof(node));
 
   n->sym = NULL;
@@ -165,6 +128,7 @@ node* add_nodes(int num, node* n1, node* n2, node* n3, node* n4) {
   } else {
     n->line_number = line_number;
   }
+  n->type = type;
 
   n->children_count = num;
   n->children[0] = n1;
@@ -193,24 +157,24 @@ node* create_node(symbol* sym) {
 
 /* <---- |------- WRAPPERS FOR BASIC NODE FUNCTIONS -------> */
 
-node* add_empty_node() {
-  return add_nodes(0, NULL, NULL, NULL, NULL);
+node* add_empty_node(int type) {
+  return add_nodes(type, 0, NULL, NULL, NULL, NULL);
 }
 
-node* add_node(node* n) {
-  return add_nodes(1, n, NULL, NULL, NULL);
+node* add_node(int type, node* n) {
+  return add_nodes(type, 1, n, NULL, NULL, NULL);
 }
 
-node* add_two_nodes(node* n1, node* n2) {
-  return add_nodes(2, n1, n2, NULL, NULL);
+node* add_two_nodes(int type, node* n1, node* n2) {
+  return add_nodes(type, 2, n1, n2, NULL, NULL);
 }
 
-node* add_three_nodes(node* n1, node* n2, node* n3) {
-  return add_nodes(3, n1, n2, n3, NULL);
+node* add_three_nodes(int type, node* n1, node* n2, node* n3) {
+  return add_nodes(type, 3, n1, n2, n3, NULL);
 }
 
-node* add_four_nodes(node* n1, node* n2, node* n3, node* n4) {
-  return add_nodes(4, n1, n2, n3, n4);
+node* add_four_nodes(int type, node* n1, node* n2, node* n3, node* n4) {
+  return add_nodes(type, 4, n1, n2, n3, n4);
 }
 
 node* create_node_constant(int value) {
@@ -256,19 +220,26 @@ node* create_node_operator(int type) {
 void __print_tree(node* n, int depth) {
   if (n == NULL)
     return;
+
   if (n->children_count == 0) {
     if (n->sym == NULL)
       return;
     for (int i = 0; i < depth; i++) {
       printf("-");
     }
+    printf(">");
     if (n->sym->tmp == false)
-      printf("%s\n", n->sym->name);
+      print_variable(n->sym->name);
     else if (n->sym->isType == false)
       printf("%d\n", n->sym->value);
     else
-      printf("%d\n", n->sym->value);
+      printf("%s\n", macro_to_string(n->sym->value));
     return;
+  }else {
+    for (int i = 0; i < depth; i++) {
+      printf("-");
+    }
+    printf("%s\n", macro_to_string(n->type));
   }
   depth++;
   for (int i = 0; i < n->children_count; i++) {
@@ -276,7 +247,7 @@ void __print_tree(node* n, int depth) {
   }
 }
 
-void print_tree(node* root) {
+void print_tree() {
   printf("------PRINTING TREE------\n");
   __print_tree(root, 0);
 }
