@@ -5,6 +5,7 @@ build: clean compiler
 compiler:
 	mkdir build;
 	cd src; cp macros.h ../build/
+	cd src; cp semantic.h ../build/
 	cd src; cp tree.h ../build/
 	cd src; cp out.h ../build/
 	cd src; cp main.c ../build/

@@ -32,7 +32,7 @@ extern node* root;
 %left AND OR
 
 %type <nonterm> program decls decl vars type stmts stmt simp control
-%type <nonterm> asop exp block else_blc unop binop
+%type <nonterm> asop exp block else_blc unop binopExp binop1 binop2 factor
 
 %start program
 
@@ -110,11 +110,8 @@ block     :   stmt                              { /*printf("22\n");*/ $$ = add_n
           ;
 
 exp       :   '('exp')'                         { /*printf("24\n");*/ $$ = add_node(VExp, $2); }
-          |   DEC_CONST                         { /*printf("25\n");*/ $$ = create_node_constant(atoi($1)); }
-          |   ID                                { /*printf("26\n");*/ $$ = create_node_existing_variable($1); }
           |   unop exp                          { /*printf("27\n");*/ $$ = add_two_nodes(VExp, $1, $2); }
-          |   exp binop exp                     { /*printf("28\n");*/ $$ = add_three_nodes(VExp, $1, $2, $3); }
-
+          |   binopExp                          { /*printf("28\n");*/ $$ = add_node(VBinopExp, $1); }
           // ERRORS
           | '('exp error                        { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL);}
           ;
@@ -127,19 +124,31 @@ asop      :   '='  { $$ = create_node_operator(AssigEQ); }
           |   MDE  { $$ = create_node_operator(AssigMDE); }
           ;
 
-binop     :   '+'  { $$ = create_node_operator(BiPLUS); }
-          |   '-'  { $$ = create_node_operator(BiMINUS); }
-          |   '*'  { $$ = create_node_operator(BiMULT); }
-          |   '/'  { $$ = create_node_operator(BiSUB); }
-          |   '%'  { $$ = create_node_operator(BiDIV); }
-          |   '<'  { $$ = create_node_operator(BiLS); }
-          |   LE   { $$ = create_node_operator(BiLE); }
-          |   '>'  { $$ = create_node_operator(BiGT); }
-          |   GE   { $$ = create_node_operator(BiGE); }
-          |   EQ   { $$ = create_node_operator(BiEQ); }
-          |   NE   { $$ = create_node_operator(BiNE); }
-          |   AND  { $$ = create_node_operator(BiAND); }
-          |   OR   { $$ = create_node_operator(BiOR); }
+binopExp  :   binop1 '<' binop1  { $$ = add_two_nodes(BiLS, $1, $3); }
+          |   binop1 LE binop1   { $$ = add_two_nodes(BiLE, $1, $3); }
+          |   binop1 '>' binop1  { $$ = add_two_nodes(BiGT, $1, $3); }
+          |   binop1 GE binop1   { $$ = add_two_nodes(BiGE, $1, $3); }
+          |   binop1 EQ binop1   { $$ = add_two_nodes(BiEQ, $1, $3); }
+          |   binop1 NE binop1   { $$ = add_two_nodes(BiNE, $1, $3); }
+          |   binop1 AND binop1  { $$ = add_two_nodes(BiAND, $1, $3); }
+          |   binop1 OR binop1   { $$ = add_two_nodes(BiOR, $1, $3); }
+          |   binop1             { $$ = add_node(VBinop1, $1); }
+          ;
+
+binop1    :   binop1 '+' binop2   { $$ = add_two_nodes(BiPLUS, $1, $3); }
+          |   binop1 '-' binop2   { $$ = add_two_nodes(BiMINUS, $1, $3); }
+          |   binop2              { $$ = add_node(VBinop2, $1); }
+          ;
+
+binop2    :   binop2 '*' factor        { $$ = add_two_nodes(BiMULT, $1, $3); }
+          |   binop2 '/' factor        { $$ = add_two_nodes(BiSUB, $1, $3); }
+          |   binop2 '%' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
+          |   factor                   { $$ = add_node(VFactor, $1); }
+          ;
+
+factor    :   DEC_CONST                         { /*printf("25\n");*/ $$ = create_node_constant(atoi($1)); }
+          |   ID                                { /*printf("26\n");*/ $$ = create_node_existing_variable($1); }
+          |   '('exp')'                         { $$ = add_node(VExp, $2); }
           ;
 
 unop      :   '!'  { $$ = create_node_operator(OpNOT); }

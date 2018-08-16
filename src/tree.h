@@ -8,11 +8,9 @@
 #define MAX_LINKS 4
 #define MAX_VARIABLES 128
 #define MAX_INT_SIZE 1073741823 // Maximum size of integer: 2^30 - 1
-#define MAX_VARIABLE_LENGTH 81
+#define MAX_VARIABLE_LENGTH 80
 
 /* <------- GLOBALS -------> */
-typedef int bool;
-enum { false, true };
 
 int line_number = 1; // The current line on the input file
 
@@ -21,7 +19,6 @@ int line_number = 1; // The current line on the input file
 typedef struct symbol_struct {
   char* name;
   int value;
-  int type;
 
   bool isType;
   bool tmp;
@@ -49,7 +46,6 @@ symbol* create_symbol_variable(char* name) {
   sym->name = malloc(MAX_VARIABLE_LENGTH*sizeof(char));
   strcpy(sym->name, name);
 
-  sym->isType = false;
   sym->tmp = false;
 
   return sym;
@@ -61,7 +57,6 @@ symbol* create_symbol_type(int type) {
   sym->name = NULL;
   sym->value = type;
 
-  sym->type = type;
   sym->isType = true;
   sym->tmp = true;
 
@@ -139,15 +134,15 @@ node* add_nodes(int type, int num, node* n1, node* n2, node* n3, node* n4) {
   return n;
 }
 
-node* create_node(symbol* sym) {
+node* create_node(int type, symbol* sym) {
   int i;
   node* n = (node*) malloc(sizeof(node));
 
   n->sym = sym;
   n->line_number = line_number;
+  n->type = type;
 
   n->children_count = 0;
-
   for (i = 0; i < MAX_LINKS; i++) {
     n->children[i] = NULL;
   }
@@ -178,7 +173,7 @@ node* add_four_nodes(int type, node* n1, node* n2, node* n3, node* n4) {
 }
 
 node* create_node_constant(int value) {
-  return create_node(create_symbol_constant(value));
+  return create_node(TYPECONSTANT, create_symbol_constant(value));
 }
 
 node* create_node_variable(char* name) {
@@ -188,14 +183,14 @@ node* create_node_variable(char* name) {
 
   if (sym) {
     error(VARDEFINED, line_number, name);
-    return create_node(sym);
+    return create_node(TYPEVARIABLE, sym);
   }
 
   sym = create_symbol_variable(name);
   push_symbol(sym);
 
 
-  return create_node(sym);
+  return create_node(TYPEVARIABLE, sym);
 }
 
 node* create_node_existing_variable(char* name) {
@@ -206,15 +201,15 @@ node* create_node_existing_variable(char* name) {
   if (sym == 0) {
     error(VARNOTDEFINED, line_number, name);
   }
-  return create_node(sym);
+  return create_node(TYPEVARIABLE, sym);
 }
 
 node* create_node_int() {
-  return  create_node(create_symbol_type(VType));
+  return  create_node(TYPEINT, create_symbol_type(VType));
 }
 
 node* create_node_operator(int type) {
-  return create_node(create_symbol_type(type));
+  return create_node(TYPEOPERATOR, create_symbol_type(type));
 }
 
 void __print_tree(node* n, int depth) {
@@ -226,6 +221,8 @@ void __print_tree(node* n, int depth) {
       return;
     for (int i = 0; i < depth; i++) {
       printf("-");
+      if (i%3 == 0)
+        printf("|");
     }
     printf(">");
     if (n->sym->tmp == false)
@@ -234,12 +231,18 @@ void __print_tree(node* n, int depth) {
       printf("%d\n", n->sym->value);
     else
       printf("%s\n", macro_to_string(n->sym->value));
+
     return;
   }else {
     for (int i = 0; i < depth; i++) {
       printf("-");
+      if (i%3 == 0)
+        printf("|");
     }
-    printf("%s\n", macro_to_string(n->type));
+
+    if (isBinaryOperator(n->type))
+        print_binary_operator(macro_to_string(n->type));
+    else printf("%s\n", macro_to_string(n->type));
   }
   depth++;
   for (int i = 0; i < n->children_count; i++) {
@@ -250,6 +253,18 @@ void __print_tree(node* n, int depth) {
 void print_tree() {
   printf("------PRINTING TREE------\n");
   __print_tree(root, 0);
+}
+
+// Delete from memory
+
+node* delete_from_node_backward(node* n) {
+  for(int i = 0; i < n->children_count; i++) {
+    delete_from_node_backward(n->children[i]);
+  }
+
+  if (n->type == TYPECONSTANT)
+    free(n->sym);
+  free(n);
 }
 
 #endif

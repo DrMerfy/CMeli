@@ -1,4 +1,12 @@
 {
-  var value : int;
-  value = 3;
+  var ke, value : int;
+
+  value = 3 + 2;
+  value = 3 - 3;
+  value = 0*8;
+  value = 8/3;
+  value = 8%2;
+  value = 8 > 2;
+  value = 10 < 3;
+  value = 8 || 0;
 }
