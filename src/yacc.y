@@ -32,7 +32,7 @@ extern node* root;
 %left AND OR
 
 %type <nonterm> program decls decl vars type stmts stmt simp control
-%type <nonterm> asop exp block else_blc unop binopExp binop1 binop2 factor
+%type <nonterm> asopExp exp block else_blc unopExp binopExp binop1 binop2 factor
 
 %start program
 
@@ -77,19 +77,17 @@ stmt      :   simp';'                           { /*printf("10\n");*/ $$ = add_n
           |   simp                              { $$ = 0; error_message("Missing ';'.", line_number - 1, NULL, NULL); }
           ;
 
-simp      :   ID asop exp                       { /*printf("13\n");*/ $$ = add_three_nodes(VSimp, create_node_existing_variable($1), $2, $3); }
+simp      :   asopExp                           { /*printf("13\n");*/ $$ =  add_node(VAsopExp, $1); }
           |   PRINT exp                         { /*printf("14\n");*/ $$ = add_node(VSimp, $2); }
           // ERRORS
           |   ID error                          { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Expected assigment but got ", line_number, lookahead, "."); }
           ;
 
-control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_three_nodes(VControl, $3, $5, $6); }
-          |   WHILE'('exp')' block              { /*printf("16\n");*/ $$ = add_two_nodes(VControl, $3, $5); }
-          |   FOR'('simp';'exp';'simp')' block  { /*printf("17\n");*/ $$ = add_four_nodes(VControl, $3, $5, $7, $9); }
-          |   CONTINUE';'                       { /*printf("18\n");*/ $$ = add_empty_node(VControl);  }
-          |   BREAK';'                          { /*printf("19\n");*/ $$ = add_empty_node(VControl);  }
-          // Pseudo errors
-          //|   IF'('')' block else_blc           { $$ = add_three_nodes($3, $5, $6); error_message("Condition always false.", line_number, NULL, NULL); }
+control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_three_nodes(VIF, $3, $5, $6); }
+          |   WHILE'('exp')' block              { /*printf("16\n");*/ $$ = add_two_nodes(VWHILE, $3, $5); }
+          |   FOR'('simp';'exp';'simp')' block  { /*printf("17\n");*/ $$ = add_four_nodes(VFOR, $3, $5, $7, $9); }
+          |   CONTINUE';'                       { /*printf("18\n");*/ $$ = add_empty_node(VCONTINUE);  }
+          |   BREAK';'                          { /*printf("19\n");*/ $$ = add_empty_node(VBREAK);  }
           // Errors
           |   IF error                          { $$ = 0; error_message("Missing condition ", line_number, NULL, "in if statement"); }
           |   IF '('exp error                   { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
@@ -110,18 +108,18 @@ block     :   stmt                              { /*printf("22\n");*/ $$ = add_n
           ;
 
 exp       :   '('exp')'                         { /*printf("24\n");*/ $$ = add_node(VExp, $2); }
-          |   unop exp                          { /*printf("27\n");*/ $$ = add_two_nodes(VExp, $1, $2); }
+          |   unopExp                           { /*printf("27\n");*/ $$ = add_node(VUnopExp, $1); }
           |   binopExp                          { /*printf("28\n");*/ $$ = add_node(VBinopExp, $1); }
           // ERRORS
           | '('exp error                        { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL);}
           ;
 
-asop      :   '='  { $$ = create_node_operator(AssigEQ); }
-          |   PLE  { $$ = create_node_operator(AssigPLE); }
-          |   MNE  { $$ = create_node_operator(AssigMNE); }
-          |   MLE  { $$ = create_node_operator(AssigMLE); }
-          |   SBE  { $$ = create_node_operator(AssigSBE); }
-          |   MDE  { $$ = create_node_operator(AssigMDE); }
+asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_variable($1), $3); }
+          |   ID PLE exp  { $$ = add_two_nodes(AssigPLE, create_node_existing_variable($1), $3); }
+          |   ID MNE exp  { $$ = add_two_nodes(AssigMNE, create_node_existing_variable($1), $3); }
+          |   ID MLE exp  { $$ = add_two_nodes(AssigMLE, create_node_existing_variable($1), $3); }
+          |   ID SBE exp  { $$ = add_two_nodes(AssigSBE, create_node_existing_variable($1), $3); }
+          |   ID MDE exp  { $$ = add_two_nodes(AssigMDE, create_node_existing_variable($1), $3); }
           ;
 
 binopExp  :   binop1 '<' binop1  { $$ = add_two_nodes(BiLS, $1, $3); }
@@ -151,8 +149,8 @@ factor    :   DEC_CONST                         { /*printf("25\n");*/ $$ = creat
           |   '('exp')'                         { $$ = add_node(VExp, $2); }
           ;
 
-unop      :   '!'  { $$ = create_node_operator(OpNOT); }
-          |   '-'  { $$ = create_node_operator(OpNEG); }
+unopExp      :   '!' exp  { $$ = add_node(OpNOT, $2); }
+          |   '-' exp  { $$ = add_node(OpNEG, $2); }
           ;
 
 %%

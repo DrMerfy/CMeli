@@ -20,12 +20,12 @@ node* _is_one_way(node* n) {
   _is_one_way(n->children[0]);
 }
 
-void _semantical_analysis_and_optimazation(node* parent, node* n, int child_no) {
+void _optimazation(node* parent, node* n, int child_no) {
   if (!n)
     return;
 
   for(int i = 0; i < n->children_count; i++) {
-    _semantical_analysis_and_optimazation(n, n->children[i], i);
+    _optimazation(n, n->children[i], i);
   }
 
   if (n->sym)
@@ -33,6 +33,7 @@ void _semantical_analysis_and_optimazation(node* parent, node* n, int child_no) 
 
   if (isBinaryOperator(n->type)) {
     // Check if the binary operator consists of two constants
+    // then do operation here
     if (n->children_count == 2) {
       node* possibleLeaf1 = _is_one_way(n->children[0]);
       node* possibleLeaf2 = _is_one_way(n->children[1]);
@@ -42,8 +43,6 @@ void _semantical_analysis_and_optimazation(node* parent, node* n, int child_no) 
       if (possibleLeaf1->type == TYPECONSTANT && possibleLeaf2->type == TYPECONSTANT) {
         int v1 = possibleLeaf1->sym->value;
         int v2 = possibleLeaf2->sym->value;
-
-        printf("Can reduce %d with %d on node %s\n", v1, v2, macro_to_string(n->type));
 
         int level = 1;
         int value;
@@ -123,8 +122,35 @@ void _semantical_analysis_and_optimazation(node* parent, node* n, int child_no) 
 
 }
 
+void _semantical_analysis(node* n) {
+
+  for(int i = 0; i < n->children_count; i++) {
+    _semantical_analysis(n->children[i]);
+  }
+
+  if (n->sym)
+    return;
+
+  if (n->type == VIF) {
+    // Check for constant condition
+    node* possibleLeaf = _is_one_way(n);
+    printf("Possible lead %p\n", possibleLeaf);
+    if(!possibleLeaf)
+      return;
+
+    if (possibleLeaf->type == TYPECONSTANT) {
+      if (possibleLeaf->sym->value == 0)
+        warning(ALWAYSFALSE, possibleLeaf->line_number, WHEREIF);
+      else
+        warning(ALWAYSTRUE, possibleLeaf->line_number, WHEREIF);
+    }
+  }
+
+}
+
 void analyze_tree() {
-  _semantical_analysis_and_optimazation(NULL, root, 0);
+  _optimazation(NULL, root, 0);
+  _semantical_analysis(root);
 }
 
 #endif

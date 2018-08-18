@@ -16,11 +16,11 @@ enum { false, true };
 #define VStmt 7
 #define VSimp 8
 #define VControl 9
-#define VAsop 10
+#define VAsopExp 10
 #define VExp 11
 #define VBlock 12
 #define VElseBlock 13
-#define VUnop 14
+#define VUnopExp 14
 #define VBinopExp 15
 #define VBinop1 16
 #define VBinop2 17
@@ -56,7 +56,15 @@ enum { false, true };
 #define TYPEINT 42
 #define TYPEOPERATOR 43
 
+#define VIF 44
+#define VWHILE 45
+#define VFOR 46
+#define VBREAK 47
+#define VCONTINUE 48
+
 char* macro_to_string(int macro) {
+  char* err;
+  char* out;
 
   switch (macro) {
     case 1: return "VProgram";
@@ -68,11 +76,11 @@ char* macro_to_string(int macro) {
     case 7: return "VStmt";
     case 8: return "VSimp";
     case 9: return "VControl";
-    case 10: return "VAsop";
+    case 10: return "VAsopExp";
     case 11: return "VExp";
     case 12: return "VBlock";
     case 13: return "VElseBlock";
-    case 14: return "VUnop";
+    case 14: return "VUnopExp";
     case 15: return "VBinopExp";
     case 16: return "VBinop1";
     case 17: return "VBinop2";
@@ -102,10 +110,34 @@ char* macro_to_string(int macro) {
     case 38: return "OpNEG";
 
     case 39: return "VFactor";
+
+    case 44: return "VIF";
+    case 45: return "VWHILE";
+    case 46: return "VFOR";
+    case 47: return "VBREAK";
+    case 48: return "VCONTINUE";
     default:
-              printf("Undefined %d ", macro);
-              return "Undefined";
+              err = malloc(snprintf( NULL, 0, "%d", macro) + 1);
+              snprintf(err, snprintf( NULL, 0, "%d", macro) + 1, "%d", macro);
+              out = malloc(sizeof("Undefined ") + sizeof(err) + 1);
+              strcat(out, "Undefined ");
+              strcat(out, err);
+              free(err);
+              return out;
   }
+}
+
+bool isAssignOperator(int op) {
+  switch (op) {
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+      return true;
+  }
+  return false;
 }
 
 bool isBinaryOperator(int op) {
@@ -128,5 +160,17 @@ bool isBinaryOperator(int op) {
   return false;
 }
 
+bool isUnOperator(int op) {
+  switch (op) {
+    case 37:
+    case 38:
+      return true;
+  }
+  return false;
+}
+
+bool isControlOperator(int op) {
+
+}
 
 #endif

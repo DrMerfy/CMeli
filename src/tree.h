@@ -240,8 +240,12 @@ void __print_tree(node* n, int depth) {
         printf("|");
     }
 
-    if (isBinaryOperator(n->type))
-        print_binary_operator(macro_to_string(n->type));
+    if (isAssignOperator(n->type))
+      print_assign_operator(macro_to_string(n->type));
+    else if (isBinaryOperator(n->type))
+      print_binary_operator(macro_to_string(n->type));
+    else if (isUnOperator(n->type))
+      print_un_operator(macro_to_string(n->type));
     else printf("%s\n", macro_to_string(n->type));
   }
   depth++;

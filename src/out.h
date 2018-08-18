@@ -1,14 +1,22 @@
 #ifndef OUT_H
 #define OUT_H
 
-#define ONBlack "\033[1;30m"
+#define BBLACK "\033[1;30m"
+#define UBLACK "\033[4;30m"
+#define ONBLACK "\033[0;37m\033[40m"
 #define RED "\033[0;31m"
+#define YELLOW "\033[0;33m"
 #define LGREEN "\033[1;32m"
 #define NC "\033[0m"
 
 #define VARDEFINED 1
 #define VARNOTDEFINED 2
 #define DIVBYZERO 3
+
+#define ALWAYSTRUE 4
+#define ALWAYSFALSE 5
+
+#define WHEREIF 6
 
 void error(int error, int line_number, char* variable_name) {
   printf("%s", RED);
@@ -24,6 +32,29 @@ void error(int error, int line_number, char* variable_name) {
             break;
     case DIVBYZERO:
             printf("Division by zero.\n");
+  }
+}
+
+void warning(int warning, int line_number, int where) {
+  printf("%s", YELLOW);
+  printf("WARNING at line %d: ", line_number);
+  printf("%s", NC);
+
+  switch (warning) {
+    case ALWAYSTRUE:
+      switch (where) {
+        case WHEREIF:
+          printf("The content of this if statement will always execute.\n");
+          break;
+      }
+      break;
+    case ALWAYSFALSE:
+      switch (where) {
+        case WHEREIF:
+          printf("The content of this if statement will not execute.\n");
+          break;
+      }
+      break;
   }
 }
 
@@ -51,8 +82,20 @@ void print_variable(char* name) {
   printf("%s\n", NC);
 }
 
+void print_assign_operator(char* name) {
+  printf("%s", ONBLACK);
+  printf("%s", name);
+  printf("%s\n", NC);
+}
+
 void print_binary_operator(char* name) {
-  printf("%s", ONBlack);
+  printf("%s", BBLACK);
+  printf("%s", name);
+  printf("%s\n", NC);
+}
+
+void print_un_operator(char* name) {
+  printf("%s", UBLACK);
   printf("%s", name);
   printf("%s\n", NC);
 }
