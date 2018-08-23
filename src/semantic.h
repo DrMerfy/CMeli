@@ -3,22 +3,6 @@
 
 #include "tree.h"
 
-/* Parses the tree from the given node downwards and finds if it leads to one leaf.
- * If it leads to only one leaf it returns the leaf.
- */
-node* _is_one_way(node* n) {
-  if (!n)
-    return NULL;
-
-  // If it has more than one children, it is not one way
-  if (n->children_count > 1)
-    return NULL;
-
-  if (n->children_count == 0)
-    return n;
-
-  _is_one_way(n->children[0]);
-}
 
 void _optimazation(node* parent, node* n, int child_no) {
   if (!n)
@@ -131,11 +115,11 @@ void _semantical_analysis(node* n) {
   if (n->sym)
     return;
 
+
   if (n->type == VIF) {
     // Check for constant condition
-    node* possibleLeaf = _is_one_way(n);
-    printf("Possible lead %p\n", possibleLeaf);
-    if(!possibleLeaf)
+    node* possibleLeaf = _is_one_way(get_condition(n));
+    if (!possibleLeaf)
       return;
 
     if (possibleLeaf->type == TYPECONSTANT) {
@@ -146,7 +130,71 @@ void _semantical_analysis(node* n) {
     }
   }
 
+  if (n->type == VWHILE) {
+    // Check for constant condition
+    node* possibleLeaf = _is_one_way(get_condition(n));
+    if (!possibleLeaf)
+      return;
+
+    if (possibleLeaf->type == TYPECONSTANT) {
+      // Check for break statement
+      if (!has_break(n) && possibleLeaf->sym->value > 0)
+        warning(ALWAYSTRUE, n->line_number, WHEREWHILE);
+      if (possibleLeaf->sym->value == 0)
+        warning(ALWAYSFALSE, n->line_number, WHEREWHILE);
+    }
+  }
+
+  if (n->type == VFOR) {
+    node* for_related_var;
+    node* assigment = n->children[0];
+    node* condition = n->children[1];
+    node* operation = n->children[2];
+
+    // Check assigment
+    if (assigment == NULL)
+      return;
+
+    if (assigment->type == VPRINT)
+      warning(PRINTINASSIGMENT, assigment->line_number, 0);
+
+    for_related_var = get_var_from_assigment(assigment);
+    if (for_related_var->sym == NULL)
+      return;
+
+    // Check condition
+    node* nos[10];
+    node** nodes = get_vars(condition, nos);
+
+    bool ok = false;
+    for (int i = 0; i < ind; i++) {
+      if (!strcmp(nodes[i]->sym->name,for_related_var->sym->name))
+        ok = true;
+    }
+
+    if (!ok)
+      warning(UNRELATEDCONDITION, condition->line_number, 0);
+    // Clean up
+    ind = 0;
+
+    if (!has_break(n) && !ok)
+      warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
+
+    // Check for constant condition
+    node* possibleLeaf = _is_one_way(condition);
+    if (!possibleLeaf)
+      return;
+
+    if (possibleLeaf->type == TYPECONSTANT) {
+      // Check for break statement
+      if (!has_break(n) && possibleLeaf->sym->value > 0)
+        warning(ALWAYSTRUE, n->line_number, WHEREFOR);
+      if (possibleLeaf->sym->value == 0)
+        warning(ALWAYSFALSE, n->line_number, WHEREFOR);
+    }
+  }
 }
+
 
 void analyze_tree() {
   _optimazation(NULL, root, 0);

@@ -4,6 +4,8 @@
 #define BBLACK "\033[1;30m"
 #define UBLACK "\033[4;30m"
 #define ONBLACK "\033[0;37m\033[40m"
+#define BCYAN "\033[1;36m"
+#define ONCYAN "\033[0;37m\033[46m"
 #define RED "\033[0;31m"
 #define YELLOW "\033[0;33m"
 #define LGREEN "\033[1;32m"
@@ -17,6 +19,11 @@
 #define ALWAYSFALSE 5
 
 #define WHEREIF 6
+#define WHEREWHILE 7
+
+#define PRINTINASSIGMENT 8
+#define UNRELATEDCONDITION 9
+#define WHEREFOR 10
 
 void error(int error, int line_number, char* variable_name) {
   printf("%s", RED);
@@ -46,14 +53,30 @@ void warning(int warning, int line_number, int where) {
         case WHEREIF:
           printf("The content of this if statement will always execute.\n");
           break;
+        case WHEREWHILE:
+          printf("This while statement will execute indefinitely.\n");
+          break;
+        case WHEREFOR:
+          printf("This for statement will execute indefinitely.\n");
       }
       break;
     case ALWAYSFALSE:
       switch (where) {
         case WHEREIF:
-          printf("The content of this if statement will not execute.\n");
+          printf("The content of this if statement won't execute.\n");
           break;
+        case WHEREWHILE:
+          printf("The content of this while statement won't execute.\n");
+          break;
+        case WHEREFOR:
+          printf("The content of this for statement won't execute.\n");
       }
+      break;
+    case PRINTINASSIGMENT:
+      printf("Print instead of assigment (in for loop) may cause unindened behaviour.\n");
+      break;
+    case UNRELATEDCONDITION:
+      printf("The variables in the condition are not related with the assigment.\n");
       break;
   }
 }
@@ -96,6 +119,18 @@ void print_binary_operator(char* name) {
 
 void print_un_operator(char* name) {
   printf("%s", UBLACK);
+  printf("%s", name);
+  printf("%s\n", NC);
+}
+
+void print_control_main(char* name) {
+  printf("%s", ONCYAN);
+  printf("%s", name);
+  printf("%s\n", NC);
+}
+
+void print_control(char* name) {
+  printf("%s", BCYAN);
   printf("%s", name);
   printf("%s\n", NC);
 }

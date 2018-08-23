@@ -14,8 +14,8 @@ int main(void) {
 
   analyze_tree();
 
-  printf("---------Optimized tree--------\n");
-  print_tree();
+  //printf("---------Optimized tree--------\n");
+  //print_tree();
 
 
 }

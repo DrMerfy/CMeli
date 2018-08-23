@@ -62,6 +62,8 @@ enum { false, true };
 #define VBREAK 47
 #define VCONTINUE 48
 
+#define VPRINT 49
+
 char* macro_to_string(int macro) {
   char* err;
   char* out;
@@ -116,6 +118,8 @@ char* macro_to_string(int macro) {
     case 46: return "VFOR";
     case 47: return "VBREAK";
     case 48: return "VCONTINUE";
+
+    case 49: return "VPRINT";
     default:
               err = malloc(snprintf( NULL, 0, "%d", macro) + 1);
               snprintf(err, snprintf( NULL, 0, "%d", macro) + 1, "%d", macro);
@@ -170,7 +174,15 @@ bool isUnOperator(int op) {
 }
 
 bool isControlOperator(int op) {
-
+  switch (op) {
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+    case 48:
+      return true;
+  }
+  return false;
 }
 
 #endif

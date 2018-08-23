@@ -212,18 +212,28 @@ node* create_node_operator(int type) {
   return create_node(TYPEOPERATOR, create_symbol_type(type));
 }
 
+void __print_depth(int depth) {
+  for (int i = 0; i < depth; i++) {
+    printf("-");
+    if (i%3 == 0)
+      printf("|");
+  }
+}
+
 void __print_tree(node* n, int depth) {
   if (n == NULL)
     return;
 
   if (n->children_count == 0) {
-    if (n->sym == NULL)
+    if (n->sym == NULL) {
+      if (n->type == VBREAK || n->type == VCONTINUE) {
+        __print_depth(depth);
+        printf(">");
+        print_control(macro_to_string(n->type));
+      }
       return;
-    for (int i = 0; i < depth; i++) {
-      printf("-");
-      if (i%3 == 0)
-        printf("|");
     }
+    __print_depth(depth);
     printf(">");
     if (n->sym->tmp == false)
       print_variable(n->sym->name);
@@ -234,11 +244,7 @@ void __print_tree(node* n, int depth) {
 
     return;
   }else {
-    for (int i = 0; i < depth; i++) {
-      printf("-");
-      if (i%3 == 0)
-        printf("|");
-    }
+    __print_depth(depth);
 
     if (isAssignOperator(n->type))
       print_assign_operator(macro_to_string(n->type));
@@ -246,6 +252,8 @@ void __print_tree(node* n, int depth) {
       print_binary_operator(macro_to_string(n->type));
     else if (isUnOperator(n->type))
       print_un_operator(macro_to_string(n->type));
+    else if (isControlOperator(n->type))
+      print_control_main(macro_to_string(n->type));
     else printf("%s\n", macro_to_string(n->type));
   }
   depth++;
@@ -257,6 +265,82 @@ void __print_tree(node* n, int depth) {
 void print_tree() {
   printf("------PRINTING TREE------\n");
   __print_tree(root, 0);
+}
+
+// Tree iterators
+
+/* Parses the tree from the given node downwards and finds if it leads to one leaf.
+ * If it leads to only one leaf it returns the leaf.
+ */
+node* _is_one_way(node* n) {
+  if (!n)
+    return NULL;
+
+  // If it has more than one children, it is not one way
+  if (n->children_count > 1)
+    return NULL;
+
+  if (n->children_count == 0)
+    return n;
+
+  _is_one_way(n->children[0]);
+}
+
+/* Parses the tree from the given node downwards and finds the condition realated
+ * to the if or while. If the node is not and if or while, it returns null.
+ */
+node* get_condition(node* n) {
+  if (!n)
+    return NULL;
+
+  if (n->children_count == 0)
+    return NULL;
+
+  return n->children[0];
+}
+
+/* Takes as input a while node and iterates the tree downwards from that node
+ * searching for a break statement. If it finds it, returns true.
+ */
+bool has_break(node* n) {
+  if (!n)
+    return false;
+
+  bool res;
+  for (int i = 0; i < n->children_count; i++) {
+    res = has_break(n->children[i]);
+  }
+
+  if (n->children_count == 0)
+    if (n->type == VBREAK) return true; else return false;
+  else
+    return res;
+}
+
+/* Takes as input a assigment (asopExp) node and returns the variable that is assigned. */
+node* get_var_from_assigment(node* n) {
+  if (!n)
+    return NULL;
+
+  return n->children[0]->children[0];
+}
+
+/* Takes as input a node and returns a matrix with the variables containted. */
+int ind; // This may not be the perfect structured code example. But I cannot get it to work otherwise :c 
+node** get_vars(node* n, node* nodes[]) {
+  if (!n)
+    return NULL;
+
+  for (int i = 0; i < n->children_count; i++) {
+    get_vars(n->children[i], nodes);
+  }
+
+  if (n->type == TYPEVARIABLE) {
+
+    nodes[ind] = n;
+    ind++;
+  }
+  return nodes;
 }
 
 // Delete from memory

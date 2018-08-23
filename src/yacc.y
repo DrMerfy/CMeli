@@ -70,17 +70,15 @@ stmts     :   stmts stmt                        { /*printf("8\n");*/ $$ = add_tw
           |   /*EMPTY*/                         { /*printf("9\n");*/ $$ = add_empty_node(VStmts);  }
           ;
 
-stmt      :   simp';'                           { /*printf("10\n");*/ $$ = add_node(VStmt, $1); }
-          |   control                           { /*printf("11\n");*/ $$ = add_node(VStmt, $1); }
+stmt      :   simp';'                           { /*printf("10\n");*/ $$ = add_node(VSimp, $1); }
+          |   control                           { /*printf("11\n");*/ $$ = add_node(VControl, $1); }
           |   ';'                               { /*printf("12\n");*/ $$ = add_empty_node(VStmt);  }
           // Pseudo error
           |   simp                              { $$ = 0; error_message("Missing ';'.", line_number - 1, NULL, NULL); }
           ;
 
 simp      :   asopExp                           { /*printf("13\n");*/ $$ =  add_node(VAsopExp, $1); }
-          |   PRINT exp                         { /*printf("14\n");*/ $$ = add_node(VSimp, $2); }
-          // ERRORS
-          |   ID error                          { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Expected assigment but got ", line_number, lookahead, "."); }
+          |   PRINT exp                         { /*printf("14\n");*/ $$ = add_node(VPRINT, $2); }
           ;
 
 control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_three_nodes(VIF, $3, $5, $6); }
@@ -94,6 +92,7 @@ control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_t
           |   WHILE error                       { $$ = 0; error_message("Missing condition ", line_number, NULL, "in while statement"); }
           |   WHILE '('exp error                { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
           |   FOR error                         { $$ = 0; error_message("Missing condition ", line_number, NULL, "in for statement"); }
+          |   FOR '('simp';'exp';'error         { $$ = 0; error_message("Missing loop operation ", line_number, NULL, "in for statement"); }
           |   FOR '('simp';'exp';'simp error    { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
 
           ;
@@ -102,8 +101,8 @@ else_blc  :   ELSE  block                       { /*printf("20\n");*/ $$ = add_n
           |   /*EMPTY*/                         { /*printf("21\n");*/ $$ = add_empty_node(VElseBlock);  }
           ;
 
-block     :   stmt                              { /*printf("22\n");*/ $$ = add_node(VBlock, $1); }
-          |   '{'stmts'}'                       { /*printf("23\n");*/ $$ = add_node(VBlock, $2); }
+block     :   stmt                              { /*printf("22\n");*/ $$ = add_node(VStmt, $1); }
+          |   '{'stmts'}'                       { /*printf("23\n");*/ $$ = add_node(VStmts, $2); }
           |   error                             { $$ = 0; error_message("Expected statement.", line_number, NULL, NULL); }
           ;
 
@@ -120,6 +119,9 @@ asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_var
           |   ID MLE exp  { $$ = add_two_nodes(AssigMLE, create_node_existing_variable($1), $3); }
           |   ID SBE exp  { $$ = add_two_nodes(AssigSBE, create_node_existing_variable($1), $3); }
           |   ID MDE exp  { $$ = add_two_nodes(AssigMDE, create_node_existing_variable($1), $3); }
+          // ERRORS
+          |   ID error    { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Expected assigment but got ", line_number, lookahead, "."); }
+
           ;
 
 binopExp  :   binop1 '<' binop1  { $$ = add_two_nodes(BiLS, $1, $3); }
