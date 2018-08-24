@@ -1,11 +1,6 @@
 {
-  var ke, value : int;
   var hello : int;
+
   hello = 3;
-
-  value = -2;
-
-  for (hello = 2 ; hello > 3; value = 2) {
-    break;
-  }
+  hello += 3;
 }

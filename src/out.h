@@ -24,6 +24,9 @@
 #define PRINTINASSIGMENT 8
 #define UNRELATEDCONDITION 9
 #define WHEREFOR 10
+#define UNRELATEDOPERATION 11
+#define PRINTOPERATION 12
+#define ASSIGMENTOPERATION 13
 
 void error(int error, int line_number, char* variable_name) {
   printf("%s", RED);
@@ -77,6 +80,15 @@ void warning(int warning, int line_number, int where) {
       break;
     case UNRELATEDCONDITION:
       printf("The variables in the condition are not related with the assigment.\n");
+      break;
+    case UNRELATEDOPERATION:
+      printf("The variables in the operation are not related with the assigment.\n");
+      break;
+    case PRINTOPERATION:
+      printf("Print instead of condition (in for loop) may cause unindened behaviour.\n");
+      break;
+    case ASSIGMENTOPERATION:
+      printf("Assigment instead of increment or decrement (in for loop) may cause unindened behaviour.\n");
       break;
   }
 }

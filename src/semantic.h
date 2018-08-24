@@ -151,6 +151,7 @@ void _semantical_analysis(node* n) {
     node* condition = n->children[1];
     node* operation = n->children[2];
 
+    bool hasBreak = has_break(n);
     // Check assigment
     if (assigment == NULL)
       return;
@@ -177,21 +178,63 @@ void _semantical_analysis(node* n) {
     // Clean up
     ind = 0;
 
-    if (!has_break(n) && !ok)
+    if (!hasBreak && !ok)
       warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
 
     // Check for constant condition
     node* possibleLeaf = _is_one_way(condition);
-    if (!possibleLeaf)
-      return;
 
-    if (possibleLeaf->type == TYPECONSTANT) {
-      // Check for break statement
-      if (!has_break(n) && possibleLeaf->sym->value > 0)
-        warning(ALWAYSTRUE, n->line_number, WHEREFOR);
-      if (possibleLeaf->sym->value == 0)
-        warning(ALWAYSFALSE, n->line_number, WHEREFOR);
+    if (possibleLeaf) {
+      if (possibleLeaf->type == TYPECONSTANT) {
+        // Check for break statement
+        if (!has_break && possibleLeaf->sym->value > 0)
+          warning(ALWAYSTRUE, n->line_number, WHEREFOR);
+        if (possibleLeaf->sym->value == 0)
+          warning(ALWAYSFALSE, n->line_number, WHEREFOR);
+      }
     }
+
+    // Check operation
+    nodes = get_vars(operation, nos);
+
+    ok = false;
+    for (int i = 0; i < ind; i++) {
+      if (!strcmp(nodes[i]->sym->name,for_related_var->sym->name))
+        ok = true;
+    }
+
+    if (!ok)
+      warning(UNRELATEDOPERATION, condition->line_number, 0);
+    // Clean up
+    ind = 0;
+
+    if (!hasBreak && !ok)
+      warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
+
+    // Check for constant condition
+    possibleLeaf = _is_one_way(operation);
+    if (possibleLeaf) {
+
+      if (possibleLeaf->type == TYPECONSTANT) {
+        // Check for break statement
+        if (!hasBreak && possibleLeaf->sym->value > 0)
+          warning(ALWAYSTRUE, n->line_number, WHEREFOR);
+        if (possibleLeaf->sym->value == 0)
+          warning(ALWAYSFALSE, n->line_number, WHEREFOR);
+      }
+    }
+
+    // Check for easy issues
+    if (operation->type == VPRINT){
+      warning(PRINTOPERATION, operation->line_number, 0);
+      if (!hasBreak)
+        warning(ALWAYSTRUE, n->line_number, WHEREFOR);
+    }else if (operation->children[0]->type == AssigEQ) {
+      warning(ASSIGMENTOPERATION, operation->line_number, 0);
+      if (!hasBreak)
+        warning(ALWAYSTRUE, n->line_number, WHEREFOR);
+    }
+
   }
 }
 
