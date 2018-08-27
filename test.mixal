@@ -1,0 +1,32 @@
+*
+*
+* PRINT BUFFERS
+SBUF    CON    0
+BUF1    CON    0
+BUF2    CON    0
+
+* PROGRAM START
+START   EQU    1000
+        ORIG   START
+
+* VARIABLE DEFINITION
+V1      EQU    2500
+
+* ASSIGMENTS
+        LDA	=999999999=
+        ADD	=73741824=
+        STA    V1
+
+* RUNTIME
+        LDA    V1
+        ENTX   44
+        JANN	 *+2
+	      ENTX	 45
+        STX    SBUF
+        CHAR
+        STA   BUF1
+        STX   BUF2
+        OUT   SBUF(19)
+        HLT
+
+        END   START

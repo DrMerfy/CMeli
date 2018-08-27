@@ -240,6 +240,14 @@ void _semantical_analysis(node* n) {
 
 
 void analyze_tree() {
+  // Cut the declaration sub-tree
+  node* decls = root->children[0];
+  node* stmts = root->children[1];
+  root->children_count = 1;
+  root->children[0] = stmts;
+  root->children[1] = NULL;
+  delete_from_node_backward(decls);
+
   _optimazation(NULL, root, 0);
   _semantical_analysis(root);
 }

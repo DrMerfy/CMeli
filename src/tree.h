@@ -20,6 +20,7 @@ typedef struct symbol_struct {
   char* name;
   int value;
 
+  char* assos_name; // Name assosiated with this symbol on the runtime
   bool isType;
   bool tmp;
 } symbol;
@@ -79,6 +80,15 @@ void push_symbol(symbol* sym) {
   }else {
     printf("MAX VARIABLES OVERFLOW\n");
   }
+}
+
+/* Pops a symbol from the symbols table and returns it */
+symbol* pop_symbol() {
+  if (symbol_table_index > 0) {
+    symbol_table_index--;
+    return symbols_table[symbol_table_index];
+  }
+  return NULL;
 }
 
 void pop_symbols() {
@@ -326,7 +336,7 @@ node* get_var_from_assigment(node* n) {
 }
 
 /* Takes as input a node and returns a matrix with the variables containted. */
-int ind; // This may not be the perfect structured code example. But I cannot get it to work otherwise :c 
+int ind; // This may not be the perfect structured code example. But I cannot get it to work otherwise :c
 node** get_vars(node* n, node* nodes[]) {
   if (!n)
     return NULL;

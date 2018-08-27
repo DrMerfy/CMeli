@@ -28,6 +28,7 @@
 #define PRINTOPERATION 12
 #define ASSIGMENTOPERATION 13
 
+
 void error(int error, int line_number, char* variable_name) {
   printf("%s", RED);
   printf("ERROR at line %d: ", line_number);
@@ -42,6 +43,7 @@ void error(int error, int line_number, char* variable_name) {
             break;
     case DIVBYZERO:
             printf("Division by zero.\n");
+            break;
   }
 }
 
