@@ -21,7 +21,13 @@ compiler:
 
 .phony: test
 test:
+	make
 	cd scripts; ./test.sh
+
+.phony: run
+run:
+	cd build; mixasm assem
+	cd build; mixvm -r assem
 
 .phony: clean
 clean:
