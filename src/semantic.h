@@ -17,7 +17,7 @@ void _optimazation(node* parent, node* n, int child_no) {
 
   if (isBinaryOperator(n->type)) {
     // Check if the binary operator consists of two constants
-    // then do operation here
+    // then do operation here.
     if (n->children_count == 2) {
       node* possibleLeaf1 = _is_one_way(n->children[0]);
       node* possibleLeaf2 = _is_one_way(n->children[1]);
@@ -102,6 +102,63 @@ void _optimazation(node* parent, node* n, int child_no) {
         parent->children[child_no] = n;
       }
     }
+  }
+
+  if (isAssignOperator(n->type)) {
+
+    // Take the inc/dec assigment operators and convert them to their
+    // extend form.
+    if (n->children_count < 2)
+      return;
+printf("FOUND\n");
+    node* var = n->children[0];
+    node* expr = n->children[1];
+
+    switch (n->type) {
+      case AssigPLE:
+        n = add_two_nodes(AssigEQ, var,
+            add_node(VBinopExp,(VBinop1,
+                add_two_nodes(BiPLUS, add_node(VBinop2, add_node(VFactor, var)), expr))));
+        break;
+      case AssigMNE:
+        n = add_two_nodes(AssigEQ, var,
+            add_node(VBinopExp,(VBinop1,
+                add_two_nodes(BiMINUS, add_node(VBinop2, add_node(VFactor, var)), expr))));
+        break;
+      case AssigMLE:
+        n = add_two_nodes(AssigEQ, var,
+            add_node(VBinopExp,(VBinop1,
+                add_node(VBinop2, add_two_nodes(BiMULT, add_node(VFactor, var), expr)))));
+        break;
+      case AssigSBE:
+        n = add_two_nodes(AssigEQ, var,
+            add_node(VBinopExp,(VBinop1,
+                add_node(VBinop2, add_two_nodes(BiSUB, add_node(VFactor, var), expr)))));
+        break;
+      case AssigMDE:
+        n = add_two_nodes(AssigEQ, var,
+            add_node(VBinopExp,(VBinop1,
+                add_node(VBinop2, add_two_nodes(BiDIV, add_node(VFactor, var), expr)))));
+        break;
+    }
+    parent->children[child_no] = n;
+  }
+
+  if (n->type == OpNEG) {
+    // Check if the negative operator is assigned to a single value
+    node* possibleLeaf = _is_one_way(n->children[0]);
+
+    if (!possibleLeaf)
+      return;
+
+    if (possibleLeaf->type == TYPECONSTANT){
+      int value = possibleLeaf->sym->value;
+      delete_from_node_backward(n);
+
+      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2, add_node(VFactor, create_node_constant(-value)))));
+      parent->children[child_no] = n;
+    }
+
   }
 
 }

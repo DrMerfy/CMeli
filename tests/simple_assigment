@@ -1,9 +1,8 @@
 {
   var hello, kello, jello : int;
 
-  hello =  -2;
-
-  hello = hello / 2;
+  hello += 3;
+  hello *= 3;
 
   print hello ;
 }
