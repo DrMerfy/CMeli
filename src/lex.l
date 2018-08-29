@@ -16,6 +16,8 @@ DIGIT [0-9]
 LETTER [a-zA-Z]
 
 %%
+"//".*                                    { /* DO NOTHING */ }
+[/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 
 {DIGIT}                     {
                                /*printf("%s\n",yytext);*/
