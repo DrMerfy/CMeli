@@ -4,7 +4,7 @@
 #define START_ADDRESS 100
 #define VARIABLE_S_ADDRESS 2000
 
-#define CALC_HEAP "CHEAP"
+#define CALC_STACK "CSTACK"
 #define TMP "tmp"
 
 int indx = 0;
@@ -25,7 +25,7 @@ bool _create_file() {
 }
 
 void write_header() {
-  fprintf(_file, "*\n*Automaticly generated mixal code from CScript.\n*\n\n");
+  fprintf(_file, "*\n*Automaticly generated mixal code from CMeli.\n*\n\n");
 
   // Create the buffers used for print
   fprintf(_file, "*PRINT BUFFERS\n");
@@ -41,7 +41,7 @@ void write_header() {
 
 void define_heap() {
   fprintf(_file, "\n*CALCULATION HEAP\n");
-  fprintf(_file, "%s\t\tEQU\t\t%d\n", CALC_HEAP, HEAP_S_ADDRESS);
+  fprintf(_file, "%s\t\tEQU\t\t%d\n", CALC_STACK, HEAP_S_ADDRESS);
   fprintf(_file, "%s\t\tCON\t\t0\n", TMP);
 
 }
@@ -78,9 +78,9 @@ void define_variables() {
 
 void push_to_heap() {
   if (indx > 0)
-    fprintf(_file, "\t\tSTA\t\t\%s+%d\n",CALC_HEAP, indx);
+    fprintf(_file, "\t\tSTA\t\t\%s+%d\n",CALC_STACK, indx);
   else
-    fprintf(_file, "\t\tSTA\t\tCHEAP\n");
+    fprintf(_file, "\t\tSTA\t\tCSTACK\n");
   fprintf(_file, "\t\tENTA\t\t0\n");
   indx++;
 }
@@ -97,6 +97,7 @@ void move_rA_to_rX() {
     fprintf(_file, "\t\tLDX\t\t%s\n\n", TMP);
 }
 
+/* Handles a binopExp and downwards, calculating the corresponding result */
 void calculate_binary_op(node* n) {
   if (!n)
     return;
@@ -113,23 +114,38 @@ void calculate_binary_op(node* n) {
       calculate_binary_op(n->children[0]);
       push_to_heap();
       calculate_binary_op(n->children[1]);
-      fprintf(_file, "\t\tADD\t\t%s+%d\n", CALC_HEAP, --indx);
+      fprintf(_file, "\t\tADD\t\t%s+%d\n", CALC_STACK, --indx);
+      break;
+    case BiMINUS:
+      calculate_binary_op(n->children[1]);
+      push_to_heap();
+      calculate_binary_op(n->children[0]);
+      fprintf(_file, "\t\tSUB\t\t%s+%d\n", CALC_STACK, --indx);
       break;
     case BiMULT:
       calculate_binary_op(n->children[0]);
       push_to_heap();
       calculate_binary_op(n->children[1]);
-      fprintf(_file, "\t\tMUL\t\t%s+%d\n", CALC_HEAP, --indx);
+      fprintf(_file, "\t\tMUL\t\t%s+%d\n", CALC_STACK, --indx);
       move_rX_to_rA();
       break;
-    case BiSUB:
-      calculate_binary_op(n->children[0]);
-      push_to_heap();
+    case BiDIV:
       calculate_binary_op(n->children[1]);
+      push_to_heap();
+      calculate_binary_op(n->children[0]);
       move_rA_to_rX();
-      fprintf(_file, "\t\tDIV\t\t%s+%d\n", CALC_HEAP, --indx);
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      fprintf(_file, "\t\tDIV\t\t%s+%d\n", CALC_STACK, --indx);
       break;
-
+    case BiMOD:
+      calculate_binary_op(n->children[1]);
+      push_to_heap();
+      calculate_binary_op(n->children[0]);
+      move_rA_to_rX();
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      fprintf(_file, "\t\tDIV\t\t%s+%d\n", CALC_STACK, --indx);
+      move_rX_to_rA();
+      break;
     case TYPECONSTANT:
       fprintf(_file, "\t\tADD");
       fprintf(_file, "\t\t=%d=\n", n->sym->value);

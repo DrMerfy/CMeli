@@ -141,8 +141,8 @@ binop1    :   binop1 '+' binop2   { $$ = add_two_nodes(BiPLUS, $1, $3); }
           ;
 
 binop2    :   binop2 '*' factor        { $$ = add_two_nodes(BiMULT, $1, $3); }
-          |   binop2 '/' factor        { $$ = add_two_nodes(BiSUB, $1, $3); }
-          |   binop2 '%' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
+          |   binop2 '/' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
+          |   binop2 '%' factor        { $$ = add_two_nodes(BiMOD, $1, $3); }
           |   factor                   { $$ = add_node(VFactor, $1); }
           ;
 

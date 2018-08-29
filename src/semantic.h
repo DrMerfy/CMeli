@@ -41,7 +41,7 @@ void _optimazation(node* parent, node* n, int child_no) {
             value = v1 * v2;
             level = 2;
             break;
-          case BiSUB:
+          case BiDIV:
             if (v2 == 0) {
               error(DIVBYZERO, line_number, NULL);
               break;
@@ -49,7 +49,7 @@ void _optimazation(node* parent, node* n, int child_no) {
             level = 2;
             value = v1 / v2;
             break;
-          case BiDIV:
+          case BiMOD:
             value = v1 % v2;
             level = 2;
             break;
@@ -110,7 +110,6 @@ void _optimazation(node* parent, node* n, int child_no) {
     // extend form.
     if (n->children_count < 2)
       return;
-printf("FOUND\n");
     node* var = n->children[0];
     node* expr = n->children[1];
 
@@ -133,12 +132,12 @@ printf("FOUND\n");
       case AssigSBE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_node(VBinop2, add_two_nodes(BiSUB, add_node(VFactor, var), expr)))));
+                add_node(VBinop2, add_two_nodes(BiDIV, add_node(VFactor, var), expr)))));
         break;
       case AssigMDE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_node(VBinop2, add_two_nodes(BiDIV, add_node(VFactor, var), expr)))));
+                add_node(VBinop2, add_two_nodes(BiMOD, add_node(VFactor, var), expr)))));
         break;
     }
     parent->children[child_no] = n;

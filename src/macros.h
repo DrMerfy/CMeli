@@ -35,8 +35,8 @@ enum { false, true };
 #define BiPLUS 24
 #define BiMINUS 25
 #define BiMULT 26
-#define BiSUB 27
-#define BiDIV 28
+#define BiDIV 27
+#define BiMOD 28
 #define BiLS 29
 #define BiLE 30
 #define BiGT 31
@@ -97,8 +97,8 @@ char* macro_to_string(int macro) {
     case 24: return "BiPLUS";
     case 25: return "BiMINUS";
     case 26: return "BiMULT";
-    case 27: return "BiSUB";
-    case 28: return "BiDIV";
+    case 27: return "BiDIV";
+    case 28: return "BiMOD";
     case 29: return "BiLS";
     case 30: return "BiLE";
     case 31: return "BiGT";
@@ -149,8 +149,8 @@ bool isBinaryOperator(int op) {
     case BiPLUS:
     case BiMINUS:
     case BiMULT:
-    case BiSUB:
     case BiDIV:
+    case BiMOD:
     case BiLS:
     case BiLE:
     case BiGT:

@@ -26,6 +26,7 @@ test:
 
 .phony: run
 run:
+	make test
 	cd build; mixasm assem
 	cd build; mixvm -r assem
 
