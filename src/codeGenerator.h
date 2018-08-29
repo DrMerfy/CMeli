@@ -97,6 +97,20 @@ void move_rA_to_rX() {
     fprintf(_file, "\t\tLDX\t\t%s\n\n", TMP);
 }
 
+void calculate_binary_op(node*);
+/* Writes the comparision code block for the given operation. This function is
+ * meant to be used inside of calculate_binary_op(node*).
+ */
+void calculate_comparisson(char* op, node* n) {
+  calculate_binary_op(n->children[1]);
+  push_to_heap();
+  calculate_binary_op(n->children[0]);
+  fprintf(_file, "\t\tCMPA\t\t%s+%d\n", CALC_STACK, --indx);
+  fprintf(_file, "\t\tENTA\t\t1\n"); // assume the result is true
+  fprintf(_file, "\t\tJ%s\t\t*+2\n", op); // check condition
+  fprintf(_file, "\t\tENTA\t\t0\n");
+}
+
 /* Handles a binopExp and downwards, calculating the corresponding result */
 void calculate_binary_op(node* n) {
   if (!n)
@@ -145,6 +159,24 @@ void calculate_binary_op(node* n) {
       fprintf(_file, "\t\tENTA\t\t0\n");
       fprintf(_file, "\t\tDIV\t\t%s+%d\n", CALC_STACK, --indx);
       move_rX_to_rA();
+      break;
+    case BiGT:
+      calculate_comparisson("G", n);
+      break;
+    case BiLS:
+      calculate_comparisson("L", n);
+      break;
+    case BiGE:
+      calculate_comparisson("GE", n);
+      break;
+    case BiLE:
+      calculate_comparisson("LE", n);
+      break;
+    case BiEQ:
+      calculate_comparisson("E", n);
+      break;
+    case BiNE:
+      calculate_comparisson("NE", n);
       break;
     case TYPECONSTANT:
       fprintf(_file, "\t\tADD");
