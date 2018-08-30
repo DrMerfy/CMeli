@@ -160,6 +160,21 @@ void _optimazation(node* parent, node* n, int child_no) {
 
   }
 
+  if (n->type == OpNOT) {
+    // Check if the negative operator is assigned to a single value
+    node* possibleLeaf = _is_one_way(n->children[0]);
+
+    if (!possibleLeaf)
+      return;
+
+    if (possibleLeaf->type == TYPECONSTANT){
+      int value = possibleLeaf->sym->value;
+      delete_from_node_backward(n);
+
+      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2, add_node(VFactor, create_node_constant(!value)))));
+      parent->children[child_no] = n;
+    }
+  }
 }
 
 void _semantical_analysis(node* n) {

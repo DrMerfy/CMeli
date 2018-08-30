@@ -37,6 +37,7 @@ extern node* root;
 %start program
 
 // PRINT REDEX printf\("(\d+)\\n"\);  => /*printf("$1\\n");*/
+//             /\*printf\("(\d+)\\n"\);\*/ => printf("$1\\n");
 
 %%
 program   :   '{' decls stmts '}'               { /*printf("1\n");*/ root = add_two_nodes(VProgram, $2, $3); }
@@ -94,10 +95,9 @@ control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_t
           |   FOR error                         { $$ = 0; error_message("Missing condition ", line_number, NULL, "in for statement"); }
           |   FOR '('simp';'exp';'error         { $$ = 0; error_message("Missing loop operation ", line_number, NULL, "in for statement"); }
           |   FOR '('simp';'exp';'simp error    { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
-
           ;
 
-else_blc  :   ELSE  block                       { /*printf("20\n");*/ $$ = add_node(VElseBlock, $2); }
+else_blc  :   ELSE  block                       { /*printf("201\n");*/ $$ = add_node(VElseBlock, $2); }
           |   /*EMPTY*/                         { /*printf("21\n");*/ $$ = add_empty_node(VElseBlock);  }
           ;
 

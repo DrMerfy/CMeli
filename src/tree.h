@@ -127,7 +127,6 @@ node* add_nodes(int type, int num, node* n1, node* n2, node* n3, node* n4) {
   node* n = (node*) malloc(sizeof(node));
 
   n->sym = NULL;
-
   if (n1) {
     n->line_number = n1->line_number;
   } else {

@@ -8,6 +8,10 @@
 #define TMP "tmp"
 
 int indx = 0;
+int if_index = 0;
+int con_index = 0;
+int while_index = 0;
+int for_index = 0;
 
 FILE* _file;
 
@@ -98,6 +102,36 @@ void move_rA_to_rX() {
 }
 
 void calculate_binary_op(node*);
+
+void calculate_un_op(node* n) {
+  if (!n)
+    return;
+
+  switch (n->children[0]->type) {
+    case OpNEG:
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      calculate_binary_op(n->children[0]->children[0]);
+      fprintf(_file, "\t\tSTA\t\t%s\n", TMP);
+      fprintf(_file, "\t\tENTA\t\t-1\n");
+      fprintf(_file, "\t\tMUL\t\t%s\n", TMP);
+      move_rX_to_rA();
+      break;
+    case OpNOT:
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      calculate_binary_op(n->children[0]->children[0]);
+      fprintf(_file, "\t\tENTX\t\t0\n");
+      fprintf(_file, "\t\tJANZ\t\t*+2\n");
+      fprintf(_file, "\t\tENTX\t\t1\n");
+      move_rX_to_rA();
+      break;
+    default:
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      calculate_binary_op(n->children[0]->children[0]);
+      break;
+  }
+
+}
+
 /* Writes the comparision code block for the given operation. This function is
  * meant to be used inside of calculate_binary_op(node*).
  */
@@ -117,6 +151,9 @@ void calculate_binary_op(node* n) {
     return;
 
   switch (n->type) {
+    case VUnopExp:
+      calculate_un_op(n);
+      break;
     case VExp:
     case VBinopExp:
     case VBinop1:
@@ -217,10 +254,97 @@ void print_exp(node* n) {
   fprintf(_file, "\t\tOUT\t\tSBUF(19)\n");
 }
 
+void parse_and_translate(node*);
+void handle_if_stmt(node* n) {
+    if (!n)
+      return;
+
+    if_index++;
+    con_index++;
+
+    fprintf(_file, "\n");
+    fprintf(_file, "*IF CONDITION\n");
+    fprintf(_file, "\t\tENTA\t\t0\n");
+    calculate_binary_op(n->children[0]);
+    fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
+    fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
+
+    fprintf(_file, "\t\tJAZ\t\tF%d\n", if_index);
+    fprintf(_file, "*IF BLOCK\n");
+    parse_and_translate(n->children[1]);
+    fprintf(_file, "*END IF\n");
+    fprintf(_file, "F%d\t\tNOP\n\n", if_index); // jump here if the if condition is not meet.
+
+    // Check for else
+    if (n->children_count > 2 && n->children[2]->type == VElseBlock) {
+        int local_index = ++if_index;
+        fprintf(_file, "*ELSE\n");
+        fprintf(_file, "\t\tLDA\t\tC%d\n", con_index);
+        fprintf(_file, "\t\tJANZ\t\tF%d\n", local_index);
+        parse_and_translate(n->children[2]);
+        fprintf(_file, "*END ELSE\n");
+        fprintf(_file, "F%d\t\tNOP\n\n", local_index); // jump here if the if condition is not meet.
+    }
+
+}
+
+void handle_while_stmt(node* n) {
+  if (!n)
+    return;
+
+  while_index++;
+  con_index++;
+
+  fprintf(_file, "\n");
+  fprintf(_file, "*WHILE CONDITION\n");
+  fprintf(_file, "WS%d\t\tNOP\n", while_index);
+  fprintf(_file, "\t\tENTA\t\t0\n");
+  calculate_binary_op(n->children[0]);
+  fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
+  fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
+
+  fprintf(_file, "\t\tJAZ\t\tW%d\n", while_index);
+  fprintf(_file, "*WHILE BLOCK\n");
+  parse_and_translate(n->children[1]);
+  fprintf(_file, "\t\tJSJ\t\tWS%d\n", while_index); // go to the starting statement
+  fprintf(_file, "*END WHILE\n");
+  fprintf(_file, "W%d\t\tNOP\n\n", while_index); // jump here if the while condition is not meet.
+
+}
+
+void handle_for_stmt(node* n) {
+  if (!n)
+    return;
+
+  for_index++;
+  con_index++;
+
+  fprintf(_file, "\n");
+  fprintf(_file, "*FOR CONDITION\n");
+  // The assigment
+  fprintf(_file, "\t\tENTA\t\t0\n");
+  calculate_binary_op(n->children[0]);
+  // The condition
+  fprintf(_file, "FS%d\t\tNOP\n", for_index);
+  fprintf(_file, "\t\tENTA\t\t0\n");
+  calculate_binary_op(n->children[1]);
+  fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
+  fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
+
+  fprintf(_file, "\t\tJAZ\t\tF%d\n", for_index);
+  fprintf(_file, "*FOR BLOCK\n");
+  parse_and_translate(n->children[3]);
+  parse_and_translate(n->children[2]); // the inc/dec operator
+  fprintf(_file, "\t\tJSJ\t\tFS%d\n", for_index); // go to the starting statement
+  fprintf(_file, "*END FOR\n");
+  fprintf(_file, "F%d\t\tNOP\n\n", for_index); // jump here if the for condition is not meet.
+
+}
+
 /* Parses the tree -for the last time hopefully- from the given node
  * and downwards and creates the symbolic code traslating the grammar.
  */
-void parse_and_translate(node* n, node* parent) {
+void parse_and_translate(node* n) {
   if (!n)
     return;
 
@@ -230,15 +354,26 @@ void parse_and_translate(node* n, node* parent) {
       case TYPEVARIABLE:
       case TYPECONSTANT:
         break;
-
+      case VFOR:
+        handle_for_stmt(n->children[i]);
+        break;
+      case VWHILE:
+        handle_while_stmt(n->children[i]);
+        break;
+      case VIF:
+        handle_if_stmt(n->children[i]);
+        break;
+      case VUnopExp:
+        calculate_un_op(n->children[i]);
+        break;
       case VBinopExp:
         fprintf(_file, "\t\tENTA\t\t0\n");
         calculate_binary_op(n->children[i]);
         break;
 
       case AssigEQ:
-        parse_and_translate(n->children[0], n);
-        parse_and_translate(n->children[1], n);
+        parse_and_translate(n->children[0]);
+        parse_and_translate(n->children[1]);
         if (n->children[0] == NULL)
           break;
         assign_value_to_symbol(n->children[i]->children[0]->sym->assos_name);
@@ -249,7 +384,7 @@ void parse_and_translate(node* n, node* parent) {
         break;
 
       default:
-        parse_and_translate(n->children[i], n);
+        parse_and_translate(n->children[i]);
     }
   }
 
@@ -269,7 +404,7 @@ void generate_mixal() {
       define_heap();
       define_variables();
       fprintf(_file, "\n*RUNTIME\n");
-      parse_and_translate(root, NULL);
+      parse_and_translate(root);
       write_end();
   }
 
