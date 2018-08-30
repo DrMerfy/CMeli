@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+int errors_no = 0;
+
 typedef int bool;
 enum { false, true };
 

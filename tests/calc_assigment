@@ -1,6 +1,0 @@
-{
-  var tmp, one, two : int;
-
-  tmp = one + two;
-  tmp = two * one;
-}

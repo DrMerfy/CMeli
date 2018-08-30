@@ -124,7 +124,6 @@ typedef struct node_struct {
 node* root;
 
 node* add_nodes(int type, int num, node* n1, node* n2, node* n3, node* n4) {
-  printf("%s\n", macro_to_string(type));
   node* n = (node*) malloc(sizeof(node));
 
   n->sym = NULL;

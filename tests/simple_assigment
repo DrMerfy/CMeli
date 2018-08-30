@@ -1,11 +1,18 @@
-/* Generate first 20 hexagonical numbers */
 {
-  var a, b, c: int;
-  a = 10;
-  b = 0;
-  c = 3;
+  var i, j, tmp : int;
 
-  a = !!a * !a *(4342 + a) - !((!b + c)) + 3;
+  i = 0;
+  i = i + 1;
+  while (i < 10) {
 
-  print a;
+    i = i + 1;
+  }
+
+  if (i) {
+
+  }else {
+
+  }
+
+  print i;
 }

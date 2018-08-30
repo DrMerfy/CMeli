@@ -12,10 +12,13 @@ int main(void) {
   // Lexical and syntactical analysis
   yyparse();
 
-  // Print the created tree
-  //print_tree();
-
+  // Sentantical analysis and optimization
   analyze_tree();
+
+  if (errors_no > 0) {
+    printf("Found %d error(s), cannot continue with compilation.\n", errors_no);
+    return 1;
+  }
 
   printf("---------Optimized tree--------\n");
   print_tree();

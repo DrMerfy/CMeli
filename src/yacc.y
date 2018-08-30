@@ -41,8 +41,8 @@ extern node* root;
 
 %%
 program   :   '{' decls stmts '}'               { /*printf("1\n");*/ root = add_two_nodes(VProgram, $2, $3); }
-          |   '{' decls stmts                   { printf("1.1\n"); root = add_two_nodes(VProgram, $2, $3); error_message("Missing terminating '}'.",0, NULL, NULL); }
-          |       decls stmts                   { printf("1.2\n"); root = add_two_nodes(VProgram, $1, $2); error_message("Missing starting '{'.", 1, NULL, NULL); }
+          |   '{' decls stmts                   { printf("1.1\n"); root = add_two_nodes(VProgram, $2, $3); error_message("Missing terminating '}'.",0, NULL, NULL); errors_no++; }
+          |       decls stmts                   { printf("1.2\n"); root = add_two_nodes(VProgram, $1, $2); error_message("Missing starting '{'.", 1, NULL, NULL); errors_no++; }
           //|   error                             { printf("1.3\n"); root = 0; error_message("Missing starting '{'.", 1, NULL, NULL); }
           ;
 
@@ -52,19 +52,19 @@ decls     :   decls decl                        { /*printf("2\n");*/ $$ = add_tw
 
 decl      :   VAR ID vars':'type';'             { /*printf("4\n");*/ $$ = add_three_nodes(VDecl, create_node_variable($2), $3, $5); }
           // ERRORS
-          |   VAR ID vars':'type error          { $$ = 0; error_message("Missing ';'", line_number - 1, NULL, " after type declaration."); yyerrok;}
-          |   VAR ID error                      { $$ = 0; error_message("Expected ':' or ',' after variable ", line_number, $2, "."); }
-          |   VAR error';'                      { $$ = 0; error_message("Expected variable name.", line_number, NULL, NULL); }
-          |   VAR error                         { $$ = 0; error_message("Invalid variable definition.", line_number, NULL, NULL); }
+          |   VAR ID vars':'type error          { $$ = 0; error_message("Missing ';'", line_number - 1, NULL, " after type declaration."); yyerrok; errors_no++; }
+          |   VAR ID error                      { $$ = 0; error_message("Expected ':' or ',' after variable ", line_number, $2, "."); errors_no++; }
+          |   VAR error';'                      { $$ = 0; error_message("Expected variable name.", line_number, NULL, NULL); errors_no++; }
+          |   VAR error                         { $$ = 0; error_message("Invalid variable definition.", line_number, NULL, NULL); errors_no++; }
           ;
 
 vars      :   ','ID vars                        { /*printf("5\n");*/ $$ = add_two_nodes(VVars, create_node_variable($2), $3); }
           | /*EMPTY*/                           { /*printf("6\n");*/ $$ = add_empty_node(VVars);  }
-          |   ','error                          { $$ = 0; error_message("Expected variable name after ','.", line_number, NULL, NULL); }
+          |   ','error                          { $$ = 0; error_message("Expected variable name after ','.", line_number, NULL, NULL); errors_no++; }
           ;
 
 type      :   INT                               { /*printf("7\n");*/ $$ = create_node_int(); }
-          |   error                             { $$ = 0; error_message("Expected type definition.", line_number, NULL, NULL); }
+          |   error                             { $$ = 0; error_message("Expected type definition.", line_number, NULL, NULL); errors_no++; }
           ;
 
 stmts     :   stmts stmt                        { /*printf("8\n");*/ $$ = add_two_nodes(VStmts, $1, $2); }
@@ -74,8 +74,11 @@ stmts     :   stmts stmt                        { /*printf("8\n");*/ $$ = add_tw
 stmt      :   simp';'                           { /*printf("10\n");*/ $$ = add_node(VSimp, $1); }
           |   control                           { /*printf("11\n");*/ $$ = add_node(VControl, $1); }
           |   ';'                               { /*printf("12\n");*/ $$ = add_empty_node(VStmt);  }
-          // Pseudo error
-          |   simp                              { $$ = 0; error_message("Missing ';'.", line_number - 1, NULL, NULL); }
+          // Pseudo errors_no
+          |   simp                              { $$ = 0; error_message("Missing ';'.", line_number - 1, NULL, NULL); errors_no++; }
+          |   decl                              { $$ = 0; error_message("Declaration is only allowed at the start of the program.", line_number - 1, NULL, NULL); errors_no++; }
+          |   ELSE                              { $$ = 0; error_message("Unmatched else statement.", line_number, NULL, NULL); errors_no++; }
+          |   error                             { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Unexpected ", line_number, lookahead, "."); errors_no++; }
           ;
 
 simp      :   asopExp                           { /*printf("13\n");*/ $$ =  add_node(VAsopExp, $1); }
@@ -88,13 +91,13 @@ control   :   IF'('exp')' block else_blc        { /*printf("15\n");*/ $$ = add_t
           |   CONTINUE';'                       { /*printf("18\n");*/ $$ = add_empty_node(VCONTINUE);  }
           |   BREAK';'                          { /*printf("19\n");*/ $$ = add_empty_node(VBREAK);  }
           // Errors
-          |   IF error                          { $$ = 0; error_message("Missing condition ", line_number, NULL, "in if statement"); }
-          |   IF '('exp error                   { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
-          |   WHILE error                       { $$ = 0; error_message("Missing condition ", line_number, NULL, "in while statement"); }
-          |   WHILE '('exp error                { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
-          |   FOR error                         { $$ = 0; error_message("Missing condition ", line_number, NULL, "in for statement"); }
-          |   FOR '('simp';'exp';'error         { $$ = 0; error_message("Missing loop operation ", line_number, NULL, "in for statement"); }
-          |   FOR '('simp';'exp';'simp error    { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); }
+          |   IF error                          { $$ = 0; error_message("Missing condition ", line_number, NULL, "in if statement"); errors_no++; }
+          |   IF '('exp error                   { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
+          |   WHILE error                       { $$ = 0; error_message("Missing condition ", line_number, NULL, "in while statement"); errors_no++; }
+          |   WHILE '('exp error                { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
+          |   FOR error                         { $$ = 0; error_message("Missing condition ", line_number, NULL, "in for statement"); errors_no++; }
+          |   FOR '('simp';'exp';'error         { $$ = 0; error_message("Missing loop operation ", line_number, NULL, "in for statement"); errors_no++; }
+          |   FOR '('simp';'exp';'simp error    { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
           ;
 
 else_blc  :   ELSE  block                       { /*printf("201\n");*/ $$ = add_node(VElseBlock, $2); }
@@ -103,14 +106,14 @@ else_blc  :   ELSE  block                       { /*printf("201\n");*/ $$ = add_
 
 block     :   stmt                              { /*printf("22\n");*/ $$ = add_node(VStmt, $1); }
           |   '{'stmts'}'                       { /*printf("23\n");*/ $$ = add_node(VStmts, $2); }
-          |   error                             { $$ = 0; error_message("Expected statement.", line_number, NULL, NULL); }
+          |   error                             { $$ = 0; error_message("Expected statement.", line_number, NULL, NULL); errors_no++; }
           ;
 
 exp       :   '('exp')'                         { /*printf("24\n");*/ $$ = add_node(VExp, $2); }
           |   unopExp                           { /*printf("27\n");*/ $$ = add_node(VUnopExp, $1); }
           |   binopExp                          { /*printf("28\n");*/ $$ = add_node(VBinopExp, $1); }
           // ERRORS
-          | '('exp error                        { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL);}
+          | '('exp error                        { $$ = 0; error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
           ;
 
 asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_variable($1), $3); }
@@ -120,7 +123,7 @@ asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_var
           |   ID SBE exp  { $$ = add_two_nodes(AssigSBE, create_node_existing_variable($1), $3); }
           |   ID MDE exp  { $$ = add_two_nodes(AssigMDE, create_node_existing_variable($1), $3); }
           // ERRORS
-          |   ID error    { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Expected assigment but got ", line_number, lookahead, "."); }
+          |   ID error    { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Expected assigment but got ", line_number, lookahead, "."); errors_no++; }
 
           ;
 

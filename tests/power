@@ -1,0 +1,14 @@
+/* Calculates the a^n */
+{
+  var a, n, i, res: int;      // Initialize result
+  a = 3; /* To the power of */ n = 3;
+  res = 1;
+
+  while (i < n) {
+    res *= a;
+    i+=1;
+    print res;
+  }
+
+  print res;
+}

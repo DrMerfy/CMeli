@@ -1,6 +1,0 @@
-{
-  var printable : int;
-
-  print 3;
-  print printable;
-}
