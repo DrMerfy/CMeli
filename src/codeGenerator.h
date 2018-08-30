@@ -8,6 +8,7 @@
 #define TMP "tmp"
 
 int indx = 0;
+int bi_index = 0;
 int if_index = 0;
 int con_index = 0;
 int loop_index = 0;
@@ -45,7 +46,7 @@ void write_header() {
   fprintf(_file, "\t\tORIG\t\tSTART\n");
 }
 
-void define_heap() {
+void define_stack() {
   fprintf(_file, "\n*CALCULATION HEAP\n");
   fprintf(_file, "%s\t\tEQU\t\t%d\n", CALC_STACK, HEAP_S_ADDRESS);
   fprintf(_file, "%s\t\tCON\t\t0\n", TMP);
@@ -82,7 +83,7 @@ void define_variables() {
   }
 }
 
-void push_to_heap() {
+void push_to_stack() {
   if (indx > 0)
     fprintf(_file, "\t\tSTA\t\t\%s+%d\n",CALC_STACK, indx);
   else
@@ -139,7 +140,7 @@ void calculate_un_op(node* n) {
  */
 void calculate_comparisson(char* op, node* n) {
   calculate_binary_op(n->children[1]);
-  push_to_heap();
+  push_to_stack();
   calculate_binary_op(n->children[0]);
   fprintf(_file, "\t\tCMPA\t\t%s+%d\n", CALC_STACK, --indx);
   fprintf(_file, "\t\tENTA\t\t1\n"); // assume the result is true
@@ -152,6 +153,7 @@ void calculate_binary_op(node* n) {
   if (!n)
     return;
 
+  int local_index;
   switch (n->type) {
     case VUnopExp:
       calculate_un_op(n);
@@ -165,26 +167,26 @@ void calculate_binary_op(node* n) {
       break;
     case BiPLUS:
       calculate_binary_op(n->children[0]);
-      push_to_heap();
+      push_to_stack();
       calculate_binary_op(n->children[1]);
       fprintf(_file, "\t\tADD\t\t%s+%d\n", CALC_STACK, --indx);
       break;
     case BiMINUS:
       calculate_binary_op(n->children[1]);
-      push_to_heap();
+      push_to_stack();
       calculate_binary_op(n->children[0]);
       fprintf(_file, "\t\tSUB\t\t%s+%d\n", CALC_STACK, --indx);
       break;
     case BiMULT:
       calculate_binary_op(n->children[0]);
-      push_to_heap();
+      push_to_stack();
       calculate_binary_op(n->children[1]);
       fprintf(_file, "\t\tMUL\t\t%s+%d\n", CALC_STACK, --indx);
       move_rX_to_rA();
       break;
     case BiDIV:
       calculate_binary_op(n->children[1]);
-      push_to_heap();
+      push_to_stack();
       calculate_binary_op(n->children[0]);
       move_rA_to_rX();
       fprintf(_file, "\t\tENTA\t\t0\n");
@@ -192,7 +194,7 @@ void calculate_binary_op(node* n) {
       break;
     case BiMOD:
       calculate_binary_op(n->children[1]);
-      push_to_heap();
+      push_to_stack();
       calculate_binary_op(n->children[0]);
       move_rA_to_rX();
       fprintf(_file, "\t\tENTA\t\t0\n");
@@ -217,9 +219,43 @@ void calculate_binary_op(node* n) {
     case BiNE:
       calculate_comparisson("NE", n);
       break;
+    case BiOR:
+      local_index = bi_index++;
+      calculate_binary_op(n->children[0]);
+      fprintf(_file, "\t\tENTX\t\t1\n");
+      fprintf(_file, "\t\tJANZ\t\tOE%d\n", local_index);
+      calculate_binary_op(n->children[1]);
+      fprintf(_file, "\t\tENTX\t\t0\n");
+      fprintf(_file, "\t\tJAZ\t\tOE%d\n", local_index);
+      fprintf(_file, "\t\tENTX\t\t1\n");
+
+      fprintf(_file, "OE%d\t\tNOP\n", local_index);
+      move_rX_to_rA();
+      break;
+    case BiAND:
+      local_index = bi_index++;
+
+      calculate_binary_op(n->children[0]);
+      fprintf(_file, "\t\tENTX\t\t0\n");
+      fprintf(_file, "\t\tJAZ\t\tOE%d\n", local_index);
+      fprintf(_file, "\t\tENTA\t\t0\n");
+      calculate_binary_op(n->children[1]);
+      fprintf(_file, "\t\tENTX\t\t0\n");
+      fprintf(_file, "\t\tJAZ\t\tOE%d\n", local_index);
+      fprintf(_file, "\t\tENTX\t\t1\n");
+
+      fprintf(_file, "OE%d\t\tNOP\n", local_index);
+      move_rX_to_rA();
+      break;
     case TYPECONSTANT:
-      fprintf(_file, "\t\tADD");
-      fprintf(_file, "\t\t=%d=\n", n->sym->value);
+      if (n->sym->value < 999999999) {
+        fprintf(_file, "\t\tADD");
+        fprintf(_file, "\t\t=%d=\n", n->sym->value);
+      }
+      else {
+        fprintf(_file, "\t\tLDA\t\t=999999999=\n");
+        fprintf(_file, "\t\tADD \t\t=%d=\n", n->sym->value - 999999999);
+      }
       break;
     case TYPEVARIABLE:
       fprintf(_file, "\t\tADD");
@@ -309,7 +345,7 @@ void handle_while_stmt(node* n) {
   fprintf(_file, "\t\tJAZ\t\tW%d\n", loop_index);
   fprintf(_file, "*WHILE BLOCK\n");
   parse_and_translate(n->children[1]);
-  fprintf(_file, "\t\tJSJ\t\tWS%d\n", loop_index); // go to the starting statement
+  fprintf(_file, "\t\tJSJ\t\tLS%d\n", loop_index); // go to the starting statement
   fprintf(_file, "*END WHILE\n");
   fprintf(_file, "L%d\t\tNOP\n\n", loop_index); // jump here if the while condition is not meet.
 
@@ -423,7 +459,7 @@ void write_end() {
 void generate_mixal() {
   if (_create_file()) {
       write_header();
-      define_heap();
+      define_stack();
       define_variables();
       fprintf(_file, "\n*RUNTIME\n");
       parse_and_translate(root);
