@@ -1,0 +1,25 @@
+/* First n prime numbers */
+{
+  var n, i, count, c: int;
+  var j: int;
+
+  i = 3;
+  n = 50; // Number of primes
+
+  if ( n >= 1 ) {
+     print 2;
+  }
+
+  count = 2;
+  while ( count <= n ) {
+     for ( c = 2 ; c <= i - 1 ; c+= 1 ) {
+        if ( i%c == 0 )
+           break;
+     }
+     if ( c == i ) {
+        print i;
+        count+=1;
+     }
+     i+=1;
+   }
+}

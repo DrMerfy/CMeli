@@ -330,24 +330,24 @@ void handle_while_stmt(node* n) {
   if (!n)
     return;
 
-  loop_index++;
+  int local_loop = ++loop_index;
   con_index++;
   current_loop = loop_index;
 
   fprintf(_file, "\n");
   fprintf(_file, "*WHILE CONDITION\n");
-  fprintf(_file, "LS%d\t\tNOP\n", loop_index);
+  fprintf(_file, "LS%d\t\tNOP\n", local_loop);
   fprintf(_file, "\t\tENTA\t\t0\n");
   calculate_binary_op(n->children[0]);
   fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
   fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
 
-  fprintf(_file, "\t\tJAZ\t\tW%d\n", loop_index);
+  fprintf(_file, "\t\tJAZ\t\tL%d\n", local_loop);
   fprintf(_file, "*WHILE BLOCK\n");
   parse_and_translate(n->children[1]);
-  fprintf(_file, "\t\tJSJ\t\tLS%d\n", loop_index); // go to the starting statement
+  fprintf(_file, "\t\tJSJ\t\tLS%d\n", local_loop); // go to the starting statement
   fprintf(_file, "*END WHILE\n");
-  fprintf(_file, "L%d\t\tNOP\n\n", loop_index); // jump here if the while condition is not meet.
+  fprintf(_file, "L%d\t\tNOP\n\n", local_loop); // jump here if the while condition is not meet.
 
   current_loop = -1;
 }
@@ -356,7 +356,7 @@ void handle_for_stmt(node* n) {
   if (!n)
     return;
 
-  loop_index++;
+  int local_loop = ++loop_index;
   con_index++;
   current_loop = loop_index;
   is_current_for = true;
@@ -365,22 +365,22 @@ void handle_for_stmt(node* n) {
   fprintf(_file, "*FOR CONDITION\n");
   // The assigment
   fprintf(_file, "\t\tENTA\t\t0\n");
-  calculate_binary_op(n->children[0]);
+  parse_and_translate(n->children[0]);
   // The condition
-  fprintf(_file, "LS%d\t\tNOP\n", loop_index);
+  fprintf(_file, "LS%d\t\tNOP\n", local_loop);
   fprintf(_file, "\t\tENTA\t\t0\n");
   calculate_binary_op(n->children[1]);
   fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
   fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
 
-  fprintf(_file, "\t\tJAZ\t\tL%d\n", loop_index);
+  fprintf(_file, "\t\tJAZ\t\tL%d\n", local_loop);
   fprintf(_file, "*FOR BLOCK\n");
   parse_and_translate(n->children[3]);
-  fprintf(_file, "WC%d\t\tNOP\t\t\n", loop_index);
+  fprintf(_file, "WC%d\t\tNOP\t\t\n", local_loop);
   parse_and_translate(n->children[2]); // the inc/dec operator
-  fprintf(_file, "\t\tJSJ\t\tLS%d\n", loop_index); // go to the starting statement
+  fprintf(_file, "\t\tJSJ\t\tLS%d\n", local_loop); // go to the starting statement
   fprintf(_file, "*END FOR\n");
-  fprintf(_file, "L%d\t\tNOP\n\n", loop_index); // jump here if the for condition is not meet.
+  fprintf(_file, "L%d\t\tNOP\n\n", local_loop); // jump here if the for condition is not meet.
 
   current_loop = -1;
   is_current_for = true;

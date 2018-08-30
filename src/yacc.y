@@ -132,27 +132,28 @@ binopExp  :   binop1 '<' binop1  { $$ = add_two_nodes(BiLS, $1, $3); }
           |   binop1 NE binop1   { $$ = add_two_nodes(BiNE, $1, $3); }
           |   binop1 AND binop1  { $$ = add_two_nodes(BiAND, $1, $3); }
           |   binop1 OR binop1   { $$ = add_two_nodes(BiOR, $1, $3); }
-          |   binop1             { $$ = add_node(VBinop1, $1); }
+          |   binop1             { /*printf("29\n");*/ $$ = add_node(VBinop1, $1); }
           ;
 
-binop1    :   binop1 '+' binop2   { $$ = add_two_nodes(BiPLUS, $1, $3); }
+binop1    :   binop1 '+' binop2   { /*printf("30\n");*/ $$ = add_two_nodes(BiPLUS, $1, $3); }
           |   binop1 '-' binop2   { $$ = add_two_nodes(BiMINUS, $1, $3); }
-          |   binop2              { $$ = add_node(VBinop2, $1); }
+          |   binop2              { /*printf("31\n");*/ $$ = add_node(VBinop2, $1); }
           ;
 
 binop2    :   binop2 '*' factor        { $$ = add_two_nodes(BiMULT, $1, $3); }
           |   binop2 '/' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
           |   binop2 '%' factor        { $$ = add_two_nodes(BiMOD, $1, $3); }
-          |   factor                   { $$ = add_node(VFactor, $1); }
+          |   factor                   { /*printf("32\n");*/ $$ = add_node(VFactor, $1); }
           ;
 
-factor    :   DEC_CONST                         { /*printf("25\n");*/ $$ = create_node_constant(atoi($1)); }
-          |   ID                                { /*printf("26\n");*/ $$ = create_node_existing_variable($1); }
-          |   '('exp')'                         { $$ = add_node(VExp, $2); }
+factor    :   DEC_CONST                         { /*printf("33\n");*/ $$ = create_node_constant(atoi($1)); }
+          |   ID                                { /*printf("34\n");*/ $$ = create_node_existing_variable($1); }
+          |   unopExp                           { /*printf("34\n");*/ $$ = add_node(VUnopExp, $1); }
+          |   '('exp')'                         { /*printf("37\n");*/ $$ = add_node(VExp, $2); }
           ;
 
-unopExp      :   '!' exp  { $$ = add_node(OpNOT, $2); }
-          |   '-' exp  { $$ = add_node(OpNEG, $2); }
+unopExp   :   '!' factor  { /*printf("35\n");*/ $$ = add_node(OpNOT, $2); }
+          |   '-' factor         { /*printf("36\n");*/ $$ = add_node(OpNEG, $2); }
           ;
 
 %%
