@@ -10,8 +10,10 @@
 int indx = 0;
 int if_index = 0;
 int con_index = 0;
-int while_index = 0;
-int for_index = 0;
+int loop_index = 0;
+
+int current_loop = -1;
+bool is_current_for = false;
 
 FILE* _file;
 
@@ -292,32 +294,36 @@ void handle_while_stmt(node* n) {
   if (!n)
     return;
 
-  while_index++;
+  loop_index++;
   con_index++;
+  current_loop = loop_index;
 
   fprintf(_file, "\n");
   fprintf(_file, "*WHILE CONDITION\n");
-  fprintf(_file, "WS%d\t\tNOP\n", while_index);
+  fprintf(_file, "LS%d\t\tNOP\n", loop_index);
   fprintf(_file, "\t\tENTA\t\t0\n");
   calculate_binary_op(n->children[0]);
   fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
   fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
 
-  fprintf(_file, "\t\tJAZ\t\tW%d\n", while_index);
+  fprintf(_file, "\t\tJAZ\t\tW%d\n", loop_index);
   fprintf(_file, "*WHILE BLOCK\n");
   parse_and_translate(n->children[1]);
-  fprintf(_file, "\t\tJSJ\t\tWS%d\n", while_index); // go to the starting statement
+  fprintf(_file, "\t\tJSJ\t\tWS%d\n", loop_index); // go to the starting statement
   fprintf(_file, "*END WHILE\n");
-  fprintf(_file, "W%d\t\tNOP\n\n", while_index); // jump here if the while condition is not meet.
+  fprintf(_file, "L%d\t\tNOP\n\n", loop_index); // jump here if the while condition is not meet.
 
+  current_loop = -1;
 }
 
 void handle_for_stmt(node* n) {
   if (!n)
     return;
 
-  for_index++;
+  loop_index++;
   con_index++;
+  current_loop = loop_index;
+  is_current_for = true;
 
   fprintf(_file, "\n");
   fprintf(_file, "*FOR CONDITION\n");
@@ -325,20 +331,33 @@ void handle_for_stmt(node* n) {
   fprintf(_file, "\t\tENTA\t\t0\n");
   calculate_binary_op(n->children[0]);
   // The condition
-  fprintf(_file, "FS%d\t\tNOP\n", for_index);
+  fprintf(_file, "LS%d\t\tNOP\n", loop_index);
   fprintf(_file, "\t\tENTA\t\t0\n");
   calculate_binary_op(n->children[1]);
   fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
   fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
 
-  fprintf(_file, "\t\tJAZ\t\tF%d\n", for_index);
+  fprintf(_file, "\t\tJAZ\t\tL%d\n", loop_index);
   fprintf(_file, "*FOR BLOCK\n");
   parse_and_translate(n->children[3]);
+  fprintf(_file, "WC%d\t\tNOP\t\t\n", loop_index);
   parse_and_translate(n->children[2]); // the inc/dec operator
-  fprintf(_file, "\t\tJSJ\t\tFS%d\n", for_index); // go to the starting statement
+  fprintf(_file, "\t\tJSJ\t\tLS%d\n", loop_index); // go to the starting statement
   fprintf(_file, "*END FOR\n");
-  fprintf(_file, "F%d\t\tNOP\n\n", for_index); // jump here if the for condition is not meet.
+  fprintf(_file, "L%d\t\tNOP\n\n", loop_index); // jump here if the for condition is not meet.
 
+  current_loop = -1;
+  is_current_for = true;
+}
+
+void handle_break() {
+    fprintf(_file, "\t\tJSJ\t\tL%d\n", current_loop); // go to the end of the current loop
+}
+
+void handle_continue() {
+    if (is_current_for)
+      fprintf(_file, "\t\tJSJ\t\tWC%d\n", current_loop); // go before the inc/dec of the current for loop
+    fprintf(_file, "\t\tJSJ\t\tLS%d\n", current_loop); // go to the start of the current while loop
 }
 
 /* Parses the tree -for the last time hopefully- from the given node
@@ -359,6 +378,9 @@ void parse_and_translate(node* n) {
         break;
       case VWHILE:
         handle_while_stmt(n->children[i]);
+        break;
+      case VBREAK:
+        handle_break();
         break;
       case VIF:
         handle_if_stmt(n->children[i]);
