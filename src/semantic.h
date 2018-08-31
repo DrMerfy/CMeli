@@ -88,7 +88,7 @@ void _optimazation(node* parent, node* n, int child_no) {
         }
 
         if (value > abs(MAX_INT_SIZE))
-          printf("Warn\n");
+          warning(OVERFLOWVALUE, n->line_number, 0);
         // Clean
         delete_from_node_backward(n);
 
@@ -301,12 +301,6 @@ void _semantical_analysis(node* n) {
       if (!hasBreak)
         warning(ALWAYSTRUE, n->line_number, WHEREFOR);
     }
-    // else if (operation->children[0]->type == AssigEQ) {
-    //   warning(ASSIGMENTOPERATION, operation->line_number, 0);
-    //   if (!hasBreak)
-    //     warning(ALWAYSTRUE, n->line_number, WHEREFOR);
-    // }
-
   }
 }
 

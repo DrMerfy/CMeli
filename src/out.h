@@ -28,6 +28,8 @@
 #define PRINTOPERATION 12
 #define ASSIGMENTOPERATION 13
 
+#define OVERFLOWVALUE 14
+
 
 void error(int error, int line_number, char* variable_name) {
   printf("%s", RED);
@@ -92,6 +94,8 @@ void warning(int warning, int line_number, int where) {
     case ASSIGMENTOPERATION:
       printf("Assigment instead of increment or decrement (in for loop) may cause unindened behaviour.\n");
       break;
+    case OVERFLOWVALUE:
+      printf("This value may cause overflow.\n");
   }
 }
 

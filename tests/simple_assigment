@@ -1,10 +1,7 @@
+/* First n prime numbers */
 {
-  var i, j, tmp : int;
-
-  i = 0;
-  j = 0;
-
-  if(i || j) {
-    print i;
-  }
+  var i, j : int;
+  i = 1;
+  j = -1;
+  print i / j;
 }

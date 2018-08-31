@@ -465,6 +465,6 @@ void generate_mixal() {
       parse_and_translate(root);
       write_end();
   }
-
+  fclose(_file);
   printf("Finished generating code.\n");
 }

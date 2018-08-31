@@ -11,7 +11,7 @@ cd ../build
 # ./compiler < ../tests/blank_program
 
 printf "${BLUE}Simple Assigment ${NC}\n"
-./compiler < ../tests/simple_assigment
+./compiler ../tests/simple_assigment
 
 # printf "${BLUE}Calculation Assigment ${NC}\n"
 # ./compiler < ../tests/calc_assigment

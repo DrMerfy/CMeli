@@ -21,8 +21,6 @@ typedef struct symbol_struct {
   int value;
 
   char* assos_name; // Name assosiated with this symbol on the runtime
-  bool isType;
-  bool tmp;
 } symbol;
 
 symbol* create_symbol_constant(int value) {
@@ -36,8 +34,6 @@ symbol* create_symbol_constant(int value) {
   sym->name = NULL;
   sym->value = value;
 
-  sym->tmp = true;
-
   return sym;
 }
 
@@ -47,8 +43,6 @@ symbol* create_symbol_variable(char* name) {
   sym->name = malloc(MAX_VARIABLE_LENGTH*sizeof(char));
   strcpy(sym->name, name);
 
-  sym->tmp = false;
-
   return sym;
 }
 
@@ -57,9 +51,6 @@ symbol* create_symbol_type(int type) {
 
   sym->name = NULL;
   sym->value = type;
-
-  sym->isType = true;
-  sym->tmp = true;
 
   return sym;
 }
@@ -79,6 +70,7 @@ void push_symbol(symbol* sym) {
     symbol_table_index++;
   }else {
     printf("MAX VARIABLES OVERFLOW\n");
+    errors_no++;
   }
 }
 
@@ -244,9 +236,9 @@ void __print_tree(node* n, int depth) {
     }
     __print_depth(depth);
     printf(">");
-    if (n->sym->tmp == false)
+    if (n->type == TYPEVARIABLE)
       print_variable(n->sym->name);
-    else if (n->sym->isType == false)
+    else if (n->type == TYPECONSTANT)
       printf("%d\n", n->sym->value);
     else
       printf("%s\n", macro_to_string(n->sym->value));

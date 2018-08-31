@@ -7,10 +7,18 @@
 #include "semantic.h"
 #include "codeGenerator.h"
 
-int main(void) {
+int main(int argc, char* argv[]) {
+
+  // Open the file
+	yyin = fopen(argv[1], "r");
+	if(yyin == NULL) {
+		printf("Cannot open input file: %s\n", argv[1]);
+		return 0;
+	}
 
   // Lexical and syntactical analysis
   yyparse();
+  fclose(yyin);
 
   // Sentantical analysis and optimization
   analyze_tree();
@@ -20,9 +28,9 @@ int main(void) {
     return 1;
   }
 
-  printf("---------Optimized tree--------\n");
-  print_tree();
+  //  print_tree();
+
   generate_mixal();
 
-  //system("ponysay compiled successfully");
+  system("ponysay compiled successfully");
 }
