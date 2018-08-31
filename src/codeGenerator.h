@@ -297,7 +297,7 @@ void handle_if_stmt(node* n) {
     if (!n)
       return;
 
-    if_index++;
+    int local_index = if_index++;
     con_index++;
 
     fprintf(_file, "\n");
@@ -307,11 +307,11 @@ void handle_if_stmt(node* n) {
     fprintf(_file, "C%d\t\tCON\t\t0\n", con_index); // store the condition
     fprintf(_file, "\t\tSTA\t\tC%d\n", con_index);
 
-    fprintf(_file, "\t\tJAZ\t\tF%d\n", if_index);
+    fprintf(_file, "\t\tJAZ\t\tF%d\n", local_index);
     fprintf(_file, "*IF BLOCK\n");
     parse_and_translate(n->children[1]);
     fprintf(_file, "*END IF\n");
-    fprintf(_file, "F%d\t\tNOP\n\n", if_index); // jump here if the if condition is not meet.
+    fprintf(_file, "F%d\t\tNOP\n\n", local_index); // jump here if the if condition is not meet.
 
     // Check for else
     if (n->children_count > 2 && n->children[2]->type == VElseBlock) {
