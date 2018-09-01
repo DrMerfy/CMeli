@@ -1,7 +1,8 @@
 /* First n prime numbers */
 {
   var i, j : int;
-  i = 1;
-  j = -1;
-  print i / j;
+  i = 8;
+  j = 3;
+  print (i / j) * j + (i % j);
+  //print i || j || 3;
 }

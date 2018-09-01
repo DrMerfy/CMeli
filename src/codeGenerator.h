@@ -190,7 +190,13 @@ void calculate_binary_op(node* n) {
       calculate_binary_op(n->children[0]);
       move_rA_to_rX();
       fprintf(_file, "\t\tENTA\t\t0\n");
+      fprintf(_file, "\t\tENT1\t\t1\n");
+      fprintf(_file, "\t\tJXNN\t\t*+2\n"); // Keep the sign
+      fprintf(_file, "\t\tENT1\t\t-1\n");
+      fprintf(_file, "\t\tST1\t\t%s\n", TMP);
       fprintf(_file, "\t\tDIV\t\t%s+%d\n", CALC_STACK, --indx);
+      fprintf(_file, "\t\tMUL\t\t%s\n", TMP);
+      move_rX_to_rA();
       break;
     case BiMOD:
       calculate_binary_op(n->children[1]);

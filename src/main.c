@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  //  print_tree();
+  print_tree();
 
   generate_mixal();
 
