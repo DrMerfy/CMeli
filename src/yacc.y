@@ -33,7 +33,7 @@ extern node* root;
 %left AND OR
 
 %type <nonterm> program decls decl vars type stmts stmt simp control
-%type <nonterm> asopExp exp block else_blc unopExp binopExp binop1 binop2 factor
+%type <nonterm> asopExp exp block else_blc unopExp binopExp binop1 binop2 binop3 binop4 factor
 
 %start program
 
@@ -111,9 +111,7 @@ block     :   stmt                              { /*printf("22\n");*/ $$ = add_n
           |   error                             { $$ = add_empty_node(VError); error_message("Expected statement.", line_number, NULL, NULL); errors_no++; }
           ;
 
-exp       :   binopExp AND binopExp             { $$ = add_two_nodes(BiAND, $1, $3); }
-          |   binopExp OR binopExp              { $$ = add_two_nodes(BiOR, $1, $3); }
-          |   binopExp                          { /*printf("28\n");*/ $$ = add_node(VBinopExp, $1); }
+exp       :   binopExp                          { /*printf("28\n");*/ $$ = add_node(VBinopExp, $1); }
           ;
 
 asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_variable($1), $3); }
@@ -127,23 +125,31 @@ asopExp   :   ID '=' exp  { $$ = add_two_nodes(AssigEQ, create_node_existing_var
 
           ;
 
-binopExp  :   binop1 '<' binop1  { $$ = add_two_nodes(BiLS, $1, $3); }
-          |   binop1 LE binop1   { $$ = add_two_nodes(BiLE, $1, $3); }
-          |   binop1 '>' binop1  { $$ = add_two_nodes(BiGT, $1, $3); }
-          |   binop1 GE binop1   { $$ = add_two_nodes(BiGE, $1, $3); }
-          |   binop1 EQ binop1   { $$ = add_two_nodes(BiEQ, $1, $3); }
-          |   binop1 NE binop1   { $$ = add_two_nodes(BiNE, $1, $3); }
-          |   binop1             { /*printf("29\n");*/ $$ = add_node(VBinop1, $1); }
+binopExp  :   binopExp OR binop1              { $$ = add_two_nodes(BiOR, $1, $3); }
+          |   binop1                            { $$ = add_node(VBinop1, $1); }
           ;
 
-binop1    :   binop1 '+' binop2   { /*printf("30\n");*/ $$ = add_two_nodes(BiPLUS, $1, $3); }
-          |   binop1 '-' binop2   { $$ = add_two_nodes(BiMINUS, $1, $3); }
-          |   binop2              { /*printf("31\n");*/ $$ = add_node(VBinop2, $1); }
+binop1    :   binop1 AND binop2             { $$ = add_two_nodes(BiAND, $1, $3); }
+          |   binop2                            { $$ = add_node(VBinop2, $1); }
           ;
 
-binop2    :   binop2 '*' factor        { $$ = add_two_nodes(BiMULT, $1, $3); }
-          |   binop2 '/' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
-          |   binop2 '%' factor        { $$ = add_two_nodes(BiMOD, $1, $3); }
+binop2    :   binop2 '<' binop3  { $$ = add_two_nodes(BiLS, $1, $3); }
+          |   binop2 LE binop3   { $$ = add_two_nodes(BiLE, $1, $3); }
+          |   binop2 '>' binop3  { $$ = add_two_nodes(BiGT, $1, $3); }
+          |   binop2 GE binop3   { $$ = add_two_nodes(BiGE, $1, $3); }
+          |   binop2 EQ binop3   { $$ = add_two_nodes(BiEQ, $1, $3); }
+          |   binop2 NE binop3   { $$ = add_two_nodes(BiNE, $1, $3); }
+          |   binop3             { $$ = add_node(VBinop3, $1); }
+          ;
+
+binop3    :   binop3 '+' binop4   { /*printf("30\n");*/ $$ = add_two_nodes(BiPLUS, $1, $3); }
+          |   binop3 '-' binop4   { $$ = add_two_nodes(BiMINUS, $1, $3); }
+          |   binop4              { /*printf("31\n");*/ $$ = add_node(VBinop4, $1); }
+          ;
+
+binop4    :   binop4 '*' factor        { $$ = add_two_nodes(BiMULT, $1, $3); }
+          |   binop4 '/' factor        { $$ = add_two_nodes(BiDIV, $1, $3); }
+          |   binop4 '%' factor        { $$ = add_two_nodes(BiMOD, $1, $3); }
           |   factor                   { /*printf("32\n");*/ $$ = add_node(VFactor, $1); }
           ;
 

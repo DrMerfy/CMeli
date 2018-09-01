@@ -1,8 +1,15 @@
-/* First n prime numbers */
 {
-  var i, j : int;
-  i = 8;
-  j = 3;
-  print (i / j) * j + (i % j);
-  //print i || j || 3;
+  var i, j, k : int;
+  i = 2;
+  j = -1;
+
+  if (i)
+    print i;
+  if (k)
+    print k;
+  else
+    print j;
+
+  if (j && k || 0)
+    print 1;
 }

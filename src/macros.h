@@ -67,6 +67,8 @@ enum { false, true };
 #define VPRINT 49
 #define VIfStmt 50
 #define VError 51
+#define VBinop3 52
+#define VBinop4 53
 
 char* macro_to_string(int macro) {
   char* err;
@@ -126,6 +128,10 @@ char* macro_to_string(int macro) {
     case 49: return "VPRINT";
     case 50: return "VIfStmt";
     case 51: return "VError";
+
+    case 52: return "VBinop3";
+    case 53: return "VBinop4";
+
     default:
               err = malloc(snprintf( NULL, 0, "%d", macro) + 1);
               snprintf(err, snprintf( NULL, 0, "%d", macro) + 1, "%d", macro);

@@ -7,7 +7,6 @@
   while (i < n) {
     res *= a;
     i+=1;
-    print res;
   }
 
   print res;

@@ -61,10 +61,13 @@ void define_variables() {
   symbol* sym = pop_symbol();
   while (sym != NULL) {
     // The variable's runtime name
-    char* stri = malloc(snprintf( NULL, 0, "%d", i) + 1);
-    snprintf(stri, snprintf( NULL, 0, "%d", i) + 1, "%d", i);
+    int size = snprintf( NULL, 0, "%d", i) + 1;
+    char* stri = malloc(size);
+    memset(stri, 0, size);
+    snprintf(stri, size, "%d", i);
 
     char* name = (char*) malloc(sizeof(stri)+sizeof(char));
+    memset(name, 0, sizeof(stri)+sizeof(char));
     name = strcat(name,"V");
     name = strcat(name, stri);
 
@@ -162,6 +165,8 @@ void calculate_binary_op(node* n) {
     case VBinopExp:
     case VBinop1:
     case VBinop2:
+    case VBinop3:
+    case VBinop4:
     case VFactor:
       calculate_binary_op(n->children[0]);
       break;
@@ -303,7 +308,7 @@ void handle_if_stmt(node* n) {
     if (!n)
       return;
 
-    int local_index = if_index++;
+    int local_index = ++if_index;
     con_index++;
 
     fprintf(_file, "\n");

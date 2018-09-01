@@ -94,9 +94,11 @@ void _optimazation(node* parent, node* n, int child_no) {
 
         // Create and link new node
         if (level == 0)
-          n = add_node(VBinop1, add_node(VBinop2, add_node(VFactor, create_node_constant(value))));
+          n = add_node(VBinop1, add_node(VBinop2,
+            add_node(VBinop3,
+            add_node(VBinop4, add_node(VFactor, create_node_constant(value))))));
         else if (level == 1)
-          n = add_node(VBinop2, add_node(VFactor, create_node_constant(value)));
+          n =  add_node(VBinop4, add_node(VFactor, create_node_constant(value)));
         else
           n = add_node(VFactor, create_node_constant(value));
         parent->children[child_no] = n;
@@ -117,27 +119,40 @@ void _optimazation(node* parent, node* n, int child_no) {
       case AssigPLE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_two_nodes(BiPLUS, add_node(VBinop2, add_node(VFactor, var)), expr))));
+              add_node(VBinop2,
+              add_node(VBinop3,
+                add_two_nodes(BiPLUS, add_node(VBinop4, add_node(VFactor, var)), expr))))));
         break;
       case AssigMNE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_two_nodes(BiMINUS, add_node(VBinop2, add_node(VFactor, var)), expr))));
+              add_node(VBinop2,
+              add_node(VBinop3,
+                add_two_nodes(BiMINUS, add_node(VBinop4, add_node(VFactor, var)), expr))))));
         break;
       case AssigMLE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_node(VBinop2, add_two_nodes(BiMULT, add_node(VFactor, var), expr)))));
+                add_node(VBinop2,
+                  add_node(VBinop3,
+                  add_node(VBinop4,
+                    add_two_nodes(BiMULT, add_node(VFactor, var), expr)))))));
         break;
       case AssigSBE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_node(VBinop2, add_two_nodes(BiDIV, add_node(VFactor, var), expr)))));
+                add_node(VBinop2,
+                  add_node(VBinop3,
+                  add_node(VBinop4,
+                    add_two_nodes(BiDIV, add_node(VFactor, var), expr)))))));
         break;
       case AssigMDE:
         n = add_two_nodes(AssigEQ, var,
             add_node(VBinopExp,(VBinop1,
-                add_node(VBinop2, add_two_nodes(BiMOD, add_node(VFactor, var), expr)))));
+                add_node(VBinop2,
+                  add_node(VBinop3,
+                  add_node(VBinop4,
+                    add_two_nodes(BiMOD, add_node(VFactor, var), expr)))))));
         break;
     }
     parent->children[child_no] = n;
@@ -154,7 +169,10 @@ void _optimazation(node* parent, node* n, int child_no) {
       int value = possibleLeaf->sym->value;
       delete_from_node_backward(n);
 
-      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2, add_node(VFactor, create_node_constant(-value)))));
+      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2,
+          add_node(VBinop3,
+          add_node(VBinop4,
+            add_node(VFactor, create_node_constant(-value)))))));
       parent->children[child_no] = n;
     }
 
@@ -171,7 +189,10 @@ void _optimazation(node* parent, node* n, int child_no) {
       int value = possibleLeaf->sym->value;
       delete_from_node_backward(n);
 
-      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2, add_node(VFactor, create_node_constant(!value)))));
+      n = add_node(VBinopExp,(VBinop1, add_node(VBinop2,
+          add_node(VBinop3,
+          add_node(VBinop4,
+            add_node(VFactor, create_node_constant(!value)))))));
       parent->children[child_no] = n;
     }
   }
