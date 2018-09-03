@@ -230,7 +230,7 @@ void _semantical_analysis(node* n) {
 
     if (possibleLeaf->type == TYPECONSTANT) {
       // Check for break statement
-      if (!has_break(n) && possibleLeaf->sym->value > 0)
+      if (!has_break(n) && possibleLeaf->sym->value != 0)
         warning(ALWAYSTRUE, n->line_number, WHEREWHILE);
       if (possibleLeaf->sym->value == 0)
         warning(ALWAYSFALSE, n->line_number, WHEREWHILE);
@@ -269,9 +269,9 @@ void _semantical_analysis(node* n) {
       warning(UNRELATEDCONDITION, condition->line_number, 0);
     // Clean up
     ind = 0;
-
-    if (!hasBreak && !ok)
-      warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
+    //
+    // if (!hasBreak && !ok)
+    //   warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
 
     // Check for constant condition
     node* possibleLeaf = _is_one_way(condition);
@@ -279,9 +279,9 @@ void _semantical_analysis(node* n) {
     if (possibleLeaf) {
       if (possibleLeaf->type == TYPECONSTANT) {
         // Check for break statement
-        if (!has_break && possibleLeaf->sym->value > 0)
+        if (!hasBreak && possibleLeaf->sym->value != 0)
           warning(ALWAYSTRUE, n->line_number, WHEREFOR);
-        if (possibleLeaf->sym->value == 0)
+        else if (possibleLeaf->sym->value == 0)
           warning(ALWAYSFALSE, n->line_number, WHEREFOR);
       }
     }
@@ -299,9 +299,9 @@ void _semantical_analysis(node* n) {
       warning(UNRELATEDOPERATION, condition->line_number, 0);
     // Clean up
     ind = 0;
-
-    if (!hasBreak && !ok)
-      warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
+    //
+    // if (!hasBreak && !ok)
+    //   warning(ALWAYSTRUE, condition->line_number, WHEREFOR);
 
     // Check for constant condition
     possibleLeaf = _is_one_way(operation);

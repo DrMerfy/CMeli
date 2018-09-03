@@ -42,9 +42,9 @@ extern node* root;
 
 %%
 program   :   '{' decls stmts '}'               { /*printf("1\n");*/ root = add_two_nodes(VProgram, $2, $3); }
-          |   '{' decls stmts                   { printf("1.1\n"); root = add_two_nodes(VProgram, $2, $3); error_message("Missing terminating '}'.",0, NULL, NULL); errors_no++; }
+          |   '{' decls stmts error             { printf("1.1\n"); root = add_two_nodes(VProgram, $2, $3); error_message("Missing terminating '}'.",0, NULL, NULL); errors_no++; }
           |       decls stmts                   { printf("1.2\n"); root = add_two_nodes(VProgram, $1, $2); error_message("Missing starting '{'.", 1, NULL, NULL); errors_no++; }
-          //|   error                             { printf("1.3\n"); root = 0; error_message("Missing starting '{'.", 1, NULL, NULL); }
+          |     error                           { printf("1.3\n"); $$ = add_empty_node(VError); error_message("Can't create tree due to invalid syntax.", 1, NULL, NULL); errors_no++; }
           ;
 
 decls     :   decls decl                        { /*printf("2\n");*/ $$ = add_two_nodes(VDecls, $1, $2); }
@@ -53,10 +53,9 @@ decls     :   decls decl                        { /*printf("2\n");*/ $$ = add_tw
 
 decl      :   VAR ID vars':'type';'             { /*printf("4\n");*/ $$ = add_three_nodes(VDecl, create_node_variable($2), $3, $5); }
           // ERRORS
-          // |   VAR ID vars':'type error          { $$ = 0; error_message("Missing ';'", line_number - 1, NULL, " after type declaration."); yyerrok; errors_no++; }
-          // |   VAR ID error                      { $$ = 0; error_message("Expected ':' or ',' after variable ", line_number, $2, "."); errors_no++; }
-          // |   VAR error';'                      { $$ = 0; error_message("Expected variable name.", line_number, NULL, NULL); errors_no++; }
-          // |   VAR error                         { $$ = 0; error_message("Invalid variable definition.", line_number, NULL, NULL); errors_no++; }
+          |   VAR ID vars':'type error          { $$ = add_empty_node(VError); error_message("Missing ';'", line_number - 1, NULL, " after type declaration."); yyerrok; errors_no++; }
+          |   VAR ID error                      { $$ = add_empty_node(VError); error_message("Expected ':' or ',' after variable ", line_number, $2, "."); errors_no++; }
+          |   VAR error';'                      { $$ = 0; error_message("Expected variable name.", line_number, NULL, NULL); errors_no++; }
           ;
 
 vars      :   ','ID vars                        { /*printf("5\n");*/ $$ = add_two_nodes(VVars, create_node_variable($2), $3); }
@@ -78,8 +77,8 @@ stmt      :   simp';'                           { /*printf("10\n");*/ $$ = add_n
           // Pseudo errors_no
           // |   simp                              { $$ = 0; error_message("Missing ';'.", line_number - 1, NULL, NULL); errors_no++; }
           // |   decl                              { $$ = 0; error_message("Declaration is only allowed at the start of the program.", line_number - 1, NULL, NULL); errors_no++; }
-          // |   ELSE                              { $$ = 0; error_message("Unmatched else statement.", line_number, NULL, NULL); errors_no++; }
-          // |   error                             { $$ = 0; char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Unexpected ", line_number, lookahead, "."); errors_no++; }
+          |   ELSE error                              { $$ = 0; error_message("Unmatched else statement.", line_number, NULL, NULL); errors_no++; }
+          |   simp error                           { $$ = add_empty_node(VError); char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Missing ';' before ", line_number, lookahead, "."); errors_no++; }
           ;
 
 simp      :   asopExp                           { /*printf("13\n");*/ $$ =  add_node(VAsopExp, $1); }
@@ -108,6 +107,7 @@ else_blc  :   ELSE  block                       { /*printf("201\n");*/ $$ = add_
 
 block     :   stmt                              { /*printf("22\n");*/ $$ = add_node(VStmt, $1); }
           |   '{'stmts'}'                       { /*printf("23\n");*/ $$ = add_node(VStmts, $2); }
+          // Errors
           |   error                             { $$ = add_empty_node(VError); error_message("Expected statement.", line_number, NULL, NULL); errors_no++; }
           ;
 
@@ -130,7 +130,7 @@ binopExp  :   binopExp OR binop1              { $$ = add_two_nodes(BiOR, $1, $3)
           ;
 
 binop1    :   binop1 AND binop2             { $$ = add_two_nodes(BiAND, $1, $3); }
-          |   binop2                            { $$ = add_node(VBinop2, $1); }
+          |   binop2                        { $$ = add_node(VBinop2, $1); }
           ;
 
 binop2    :   binop2 '<' binop3  { $$ = add_two_nodes(BiLS, $1, $3); }
@@ -158,7 +158,8 @@ factor    :   DEC_CONST                         { /*printf("33\n");*/ $$ = creat
           |   unopExp                           { /*printf("34\n");*/ $$ = add_node(VUnopExp, $1); }
           |   '('exp')'                         { /*printf("37\n");*/ $$ = add_node(VExp, $2); }
           // ERRORS
-          |   '('exp error                        { $$ = add_empty_node(VError); error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
+          |   '('exp error                      { $$ = add_empty_node(VError); error_message("Missmatched starting '('.", line_number, NULL, NULL); errors_no++; }
+          |   error                             { $$ = add_empty_node(VError); char* lookahead = malloc(sizeof(char)); lookahead[0] = yychar; error_message("Missing ';' before ", line_number, lookahead, "."); errors_no++;}
 
           ;
 
@@ -172,4 +173,5 @@ void yyerror(char *s)
 {
    printf("%d\n", line_number);
    fputs(s,stderr); putc('\n',stderr);
+   //$$ = add_empty_node(VError);
 }

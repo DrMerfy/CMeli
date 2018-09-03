@@ -429,6 +429,9 @@ void parse_and_translate(node* n) {
       case VBREAK:
         handle_break();
         break;
+      case VCONTINUE:
+        handle_continue();
+        break;
       case VIF:
         handle_if_stmt(n->children[i]);
         break;

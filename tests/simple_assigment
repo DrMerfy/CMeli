@@ -1,15 +1,10 @@
 {
-  var i, j, k : int;
-  i = 2;
-  j = -1;
+  var i, j : int;
 
-  if (i)
+  for (i = 0; i < 4; i += 1) {
+    if (i == 2)
+      continue;
     print i;
-  if (k)
-    print k;
-  else
-    print j;
-
-  if (j && k || 0)
-    print 1;
+  }
+  print i;
 }

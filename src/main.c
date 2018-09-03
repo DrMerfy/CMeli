@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
   yyparse();
   fclose(yyin);
 
+	print_tree();
+
   // Sentantical analysis and optimization
   analyze_tree();
 
@@ -28,7 +30,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  print_tree();
+  //print_tree();
 
   generate_mixal();
 
